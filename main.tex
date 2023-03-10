@@ -1,0 +1,769 @@
+% for notes environment
+\usepackage{xsavebox}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{luatexja}
+\usepackage[hiragino-pro,deluxe,nfssonly,jis2004]{luatexja-preset}
+\usepackage{fontspec}
+\usepackage{epigraph}
+\usepackage{etoolbox}
+\usepackage{tikz}
+\usepackage{framed}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{libertine}
+\usepackage[libertine]{newtxmath}
+\usepackage{bxcoloremoji}
+\usepackage{xcolor}
+\usepackage{diagbox}
+\usepackage{caption}
+\usepackage{appendixnumberbeamer}
+\usepackage{multirow}
+\usepackage{xpatch}
+\usepackage{multicol}
+\usepackage{tabularx}
+
+\usetikzlibrary{fit}
+
+\setmonofont{CMU Typewriter Text}
+
+\definecolor{links}{HTML}{2A1B81}
+\hypersetup{colorlinks,linkcolor=,urlcolor=links}
+
+\usetheme{Boadilla}
+\usecolortheme{seahorse}
+% \usefonttheme{serif}
+
+
+\xpatchcmd{\itemize}
+  {\def\makelabel}
+  {\ifnum\@itemdepth=1\relax
+     \setlength\itemsep{1.2ex}% separation for first level
+   \else
+     \ifnum\@itemdepth=2\relax
+       \setlength\itemsep{0.8ex}% separation for second level
+       \setlength\topsep{1.2ex}
+     \else
+       \ifnum\@itemdepth=3\relax
+         \setlength\itemsep{0.05ex}% separation for third level
+         \setlength\topsep{0.8ex}
+   \fi\fi\fi\def\makelabel
+  }
+ {}
+ {}
+
+\setbeamercolor{page number in head/foot}{bg=blue!10}
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+      \usebeamerfont{author in head/foot}\insertshortauthor\hspace*{1ex}(\insertshortinstitute)
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+      \usebeamerfont{title in head/foot}\insertshorttitle
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+      \insertshortdate{} @ \InsertConferenceShort
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.1\paperwidth,ht=2.25ex,dp=1ex,center]{page number in head/foot}%
+      \insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+\beamertemplatenavigationsymbolsempty
+
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+\setbeamersize{description width=1cm}
+\setbeamertemplate{items}[circle]
+\setbeamertemplate{section in toc}[circle]
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\leftskip=2em
+  {%
+    \usebeamerfont*{itemize item}%
+    \usebeamercolor{subsection number projected}%
+    \color{bg}%
+    \raise1.25pt\hbox{\donotcoloroutermaths$\bullet$}}%
+  \hskip1.5ex\inserttocsubsection\par}
+
+% Definitions for the title page
+\newcommand*{\GitHub}[1]{%
+  \gdef\InsertGitHub{#1}%
+}
+\newcommand*{\Email}[1]{%
+  \gdef\InsertEmail{\href{mailto:#1}{#1}}%
+}
+\newcommand{\ConferenceImpl}[2][]{%
+  \gdef\InsertConferenceShort{#1}%
+  \gdef\InsertConference{#2}%
+}
+\makeatletter
+\newcommand\Conference{\@dblarg\ConferenceImpl}
+\makeatother
+\setbeamerfont{title}{size=\huge, series=\bfseries, family=\mcfamily\rmfamily}
+\setbeamercolor{title}{bg=white}
+\setbeamerfont{subtitle}{size=\large, series=\mdseries, family=\gtfamily\sffamily}
+\setbeamerfont{email}{size=\scriptsize, family=\ttfamily}
+\setbeamercolor{email}{bg=white}
+\setbeamerfont{date}{shape=\itshape, family=\rmfamily}
+\setbeamerfont{vc}{size=\scriptsize, family=\ttfamily}
+\setbeamercolor{vc}{bg=white}
+
+\renewcommand{\figurename}{Fig}
+
+\input{vc.tex}
+
+\setbeamertemplate{title page}
+{%
+  \vbox{}
+  \vfill
+  \begingroup
+    \centering
+    \hrulefill\par%
+    \vskip1ex\par%
+    \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{title}
+      \vfill
+      \usebeamerfont{title}\inserttitle\par%
+      \ifx\insertsubtitle\@empty%
+      \else%
+        \vskip0.5ex%
+        {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+      \fi%
+      \vfill  
+    \end{beamercolorbox}%
+    \hrulefill\par%
+    \vskip2ex%
+    \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{author}
+      \usebeamerfont{author}\insertauthor
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{email}
+      \usebeamerfont{email}\InsertEmail
+    \end{beamercolorbox}
+    \vskip0.1ex
+    \begin{beamercolorbox}[sep=5pt,center,shadow=false,rounded=true]{institute}
+      \usebeamerfont{institute}\insertinstitute
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[sep=5pt,center,shadow=false,rounded=true]{date}
+      \usebeamerfont{date}\insertdate \normalfont @ \InsertConference
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{vc}
+      \usebeamerfont{vc}
+      \url{https://github.com/\InsertGitHub} (\texttt{\GITAbrHash})
+    \end{beamercolorbox}
+    % {\centering
+    %   \href{https://creativecommons.org/licenses/by-nc/4.0/}{%
+    %     \includegraphics[width=0.1\textwidth]{img/by-nc.pdf}%
+    %   }%
+    % }
+    {\usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}
+  \endgroup
+  \vfill
+}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% ============ ここを消すとNote消える ================
+\mode<handout>{%
+  \usepackage{pgfpages}
+  \setbeameroption{show notes on second screen=right}
+  \setbeamertemplate{note page}{%
+    \vspace{2ex}\insertnote%
+  }
+}
+% ============ ここを消すとNote消える ================
+
+
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+
+\setbeamertemplate{caption}[numbered]
+\resetcounteronoverlays{lstlisting}
+\definecolor{bluegray}{rgb}{0.4, 0.6, 0.8}
+\DeclareCaptionFormat{listing}{{\color{bluegray}\lstlistingname}#2#3}
+\captionsetup[lstlisting]{format=listing, font={footnotesize}}
+\captionsetup[figure]{name={図}}
+\captionsetup[table]{name={表}}
+\setbeamerfont{footnote}{size=\scriptsize}
+
+\setmonofont[Ligatures=TeX]{CMU Typewriter Text}
+
+\setbeamertemplate{items}[circle]
+
+\input{./lib/quotebox.tex}
+\input{./lib/footnotemark.tex}
+\input{./lib/ballon.tex}
+\input{./lib/callout.tex}
+\input{./lib/listings.tex}
+\input{./lib/notes.tex}
+\input{./lib/stack.tex}
+\input{./lib/card.tex}
+
+\newcommand\ce[1]{%
+  \coloremojiucs{#1}
+}
+
+\newcommand*{\lstitem}[1]{
+  \setbox0\hbox{\lstinline{#1}}
+  \item[\usebox0]
+}
+
+\presetkeys{todonotes}{inline, noinlinepar}{}
+
+\renewcommand{\arraystretch}{1.2}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\title[Datatype Generic Programming on Scala 3]{%
+  Datatype Generic Programming \\
+  with Scala 3
+}
+\subtitle{}
+\author[Yoshimura Hikaru]{%
+  \textsc{Yoshimura} Hikaru
+}
+\Email{hikaru\_yoshimura@r.recruit.co.jp}
+\date[April 15-16, 2023]{%
+  \oldstylenums{April 15-16, 2023}
+}
+\Conference[ScalaMatsuri 2023]{Sponsor sessions of ScalaMatsuri 2023}
+\institute[\InsertEmail]{Recruit Co., Ltd}
+\GitHub{y-yu/scalamatsuri2023}
+
+\newcommand{\facesize}{1cm}
+\newcommand\alicecallout[2]{
+  \simplecallout[{\includegraphics[width=\facesize]{./img/alice_face.png}}]{#1}{cyan!10}{#2}
+}
+\newcommand\bobcallout[2]{
+  \simplecallout[{\includegraphics[width=\facesize]{./img/bob_face.png}}]{#1}{orange!10}{#2}
+}
+
+\begin{document}
+
+\frame{\maketitle}
+
+\section{はじめに}
+
+\begin{frame}
+  \frametitle{目次}
+
+  \tableofcontents
+\end{frame}
+
+\begin{frame}
+  \frametitle{自己紹介}
+  
+  \begin{columns}
+    \begin{column}{0.3\textwidth}
+      \begin{center}
+        \begin{figure}
+          \includegraphics[width=0.95\textwidth]{img/bird2x.png}
+        \end{figure}
+      \end{center}
+ 
+      \begin{table}[h]
+        \begin{tabular}{ll}
+          Twitter & \href{https://twitter.com/\_yyu\_}{@\_yyu\_} \\
+          Qiita &  \href{https://qiita.com/yyu}{yyu} \\
+          GitHub &  \href{https://github.com/y-yu}{y-yu} \\
+        \end{tabular}
+      \end{table}
+    \end{column}
+    \begin{column}{0.7\textwidth}
+      \begin{itemize}
+        \item 筑波大学 情報学群 情報科学類卒（2011-15,学士）
+        \begin{itemize}
+          \item プログラム論理研究室、WORD編集部
+        \end{itemize}
+        
+        \item ドワンゴ ニコニコ動画 アカウントチーム
+
+        \item 未踏ターゲット2018（ゲート式量子コンピュータ）
+
+        \item CTF（\url{https://urandom.team/}）
+        \begin{itemize}
+          \item SECCON CTF 2022で世界57位（国内20位）
+        \end{itemize}
+
+        \item プログラミング
+        \begin{itemize}
+          \item Scala, \LaTeX, Rust, Go, Swift
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \section{奢り・割勘問題}
+
+% \begin{frame}
+%   \frametitle{奢り・割勘問題}
+
+%   \begin{figure}[h]
+%     \includegraphics[width=0.65\textwidth]{./img/twitter.png}\cite{Y_N_Hoshi}
+%   \end{figure}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{奢り・割勘問題}
+
+%   \begin{shadequote}[r]{}
+%     \begin{center}
+%       アリスとボブの飲食費について下記のいずれにするか決定する問題
+%       \begin{enumerate}
+%         \item ボブが全額を奢る
+%         \item 割勘とする
+%       \end{enumerate}
+%     \end{center}
+%   \end{shadequote}
+
+%   \begin{columns}
+%     \begin{column}{0.5\textwidth}
+%       \centering
+%       \emph{アリス（Alice）}
+
+%       \begin{figure}[h]
+%         \includegraphics[height=0.4\textheight]{img/alice.png}
+%       \end{figure}
+%     \end{column}
+   
+%     \begin{column}{0.5\textwidth}
+%       \centering
+%       \emph{ボブ（Bob）}
+
+%       \begin{figure}[h]
+%         \includegraphics[height=0.4\textheight]{img/bob.png}
+%       \end{figure}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \section{従来手法}
+
+% \begin{frame}
+%   \frametitle{従来手法\ballcircle{1} --- コイントス}
+
+%   \vspace{-0.2cm}
+%   \pause
+%   \begin{columns}
+%     \begin{column}{0.5\textwidth}
+%       \begin{enumerate}
+%         \item 2人でコイントスを行う
+
+%         \pause
+%         \item 表\ref{tbl:coin_meaning}に基づいて決定する
+%       \end{enumerate}
+
+%       \begin{table}[h]
+%         \caption{コインの意味}
+%         \label{tbl:coin_meaning}
+%         \begin{tabularx}{0.9\textwidth}{@{}| Y | Y |@{}}
+%           \hline
+%           コインの結果 & 意味 \\ \hline
+%           表 & ボブの奢り \\ \hline
+%           裏 & 割勘 \\ \hline
+%         \end{tabularx}
+%       \end{table}
+%     \end{column}
+%     \begin{column}{0.5\textwidth}
+%       \pause
+%       \bobcallout{+}{2人の意見が何も反映されないため\\
+%         プライバシーは完全\ce{:person_gesturing_ok:}%
+%       }
+    
+%       \pause
+%       \alicecallout{-}{しかしゲーム性は全くない}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{従来手法\ballcircle{1} --- コイントス}
+
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \alicecallout{+}{そもそもこのゲームはアリスが有利\ce{:smiling_imp:}}
+
+%       \pause
+%       \bobcallout{-}{%
+%         そもそも不公平なゲームなので、\\
+%         50:50ではおもしろくない
+%       }
+%     \end{column}
+%     \begin{column}{0.4\textwidth}
+%       \begin{itemize}
+%         \item ボブが支払うのは安目で50\%高目で100\%だが、
+%         一方でアリスは安目0\%高目でも50\%
+%       \end{itemize}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{従来手法\ballcircle{2} --- 公平な第三者を用いたAND計算}
+
+%   \pause
+%   \begin{enumerate}
+%     \item<+-> アリスとボブは公平な第三者チャーリーに$\text{\textbf{希望}} \in \{\text{奢り}, \text{割勘}\}$を渡す
+%     \item<+-> チャーリーはアリス・ボブの希望を次の表\ref{tbl:and_table}に基づいてAND演算する
+%     \item<+-> チャーリーが結果を2人に通知する
+%   \end{enumerate}
+
+%   \uncover<+(-2)->{
+%     \begin{table}[h]
+%       \caption{奢り・割勘AND演算}
+%       \label{tbl:and_table}
+%       \begin{tabularx}{0.7\textwidth}{@{}| Y | Y || Y |@{}}
+%         \hline
+%         アリス & ボブ & 結果 \\ \hline
+%         割勘  & 割勘 & 割勘 \\ \hline
+%         割勘  & 奢り & 割勘 \\ \hline
+%         奢り  & 割勘 & 割勘 \\ \hline
+%         奢り  & 奢り & 奢り \\ \hline
+%       \end{tabularx}
+%     \end{table}
+%   }
+
+%   \begin{itemize}
+%     \item<+(-1)-> ボブは期待値は$\frac{5}{8}$（62.5\%）の支払い、
+%     アリスは期待値$\frac{3}{8}$（37.5\%）の支払い
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{従来手法\ballcircle{2} --- 公平な第三者を用いたAND計算}
+  
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \bobcallout{+}{そもそもチャーリーが信頼できるのか？
+%       }
+
+%       \pause
+%       \alicecallout{-}{\noindent
+%         次のケース\ce{:point_down:}で\textbf{情報リーク}が生じる！\\
+%         \hbox to 0.5\textwidth{%
+%           \vbox{%
+%             \begin{enumerate}
+%               \item アリスが奢り、ボブは割勘を希望
+%               \item アリスが割勘、ボブは奢りを希望\label{enum:bob_detect}
+%               \item アリスが奢り、ボブは奢りを希望
+%             \end{enumerate}
+%           }
+%         }
+%       }
+%     \end{column}
+%     \begin{column}{0.4\textwidth}
+%       \begin{itemize}
+%         \item AND計算なので片方の入力と結果から、残りの入力を逆算できる場合がある
+%       \end{itemize}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{従来手法\ballcircle{2} --- 公平な第三者を用いたAND計算}
+
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \alicecallout{+}{希望が場合によっては流出するのは\\
+%         ゲーム性とみなすことができそう！\ce{:smiling_imp:}
+%       }
+
+%       \pause
+%       \bobcallout{-}{しかしこの方法では\\
+%         アリスの希望は絶対にリークしない\ce{:rage:}%
+%       }
+%     \end{column}
+%     \begin{column}{0.4\textwidth}
+%       \begin{itemize}
+%         \item たとえば「アリスが奢り・ボブは割勘を希望」のとき、
+%         結果は割勘となる
+        
+%         \item アリスは奢ってもらえないが、ボブのケチさを知ることができる
+
+%         \item しかしアリスのがめつさ情報がリークすることはない
+
+%         \pause
+%         \item なぜなら\textbf{衝突}したときに
+%         ``奢り''になるケースがないから
+%       \end{itemize}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{2人の希望の衝突}
+
+%   \pause
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \uncover<+-> {
+%         \alicecallout{+}{%
+%           2人の希望が一致したケースなら\\
+%           AND計算で問題ない%
+%         }
+%       }
+
+%       \uncover<+->{
+%         \bobcallout{-}{%
+%           一方で衝突（\textit{conflict}）した\\
+%           ケースは考える必要がある
+%         }
+%       }
+%     \end{column}
+%     \uncover<1->{
+%       \begin{column}{0.4\textwidth}
+%           \begin{table}[h]
+%             \caption{現状のコンセンサス}
+%             \label{tbl:conflict}
+%             \begin{tabularx}{0.9\textwidth}{@{}| Y | Y | X @{}}
+%               \cline{1-2}
+%               アリス & ボブ & \\ \cline{1-2}
+%               割勘  & 割勘 & \multirow{2}{\hsize}{$\bigg\}$\Large\ce{:person_gesturing_ok:}}\\ \cline{1-2}
+%               奢り  & 奢り &  \\ \cline{1-2}
+%               割勘  & 奢り & \multirow{2}{\hsize}{$\bigg\}$\Large\ce{:person_gesturing_no:}} \\ \cline{1-2}
+%               奢り  & 割勘 &   \\ \cline{1-2}
+%             \end{tabularx}
+%           \end{table}
+%       \end{column}
+%     }
+%   \end{columns}
+% \end{frame}
+
+% \section{提案手法}
+
+% \begin{frame}
+%   \centering
+%   \begin{columns}
+%     \begin{column}{0.2\textwidth}
+%       \begin{minipage}[t][.8\textheight][t]{\textwidth}
+%         \tableofcontents[currentsection]
+%       \end{minipage}
+%     \end{column}
+%     \begin{column}{0.8\textwidth}
+%       \centering
+%       \begin{columns}
+%         \begin{column}{0.45\columnwidth}
+%           \alicecallout{-}{\huge コイントス}
+%         \end{column}
+%         \begin{column}{0.45\columnwidth}
+%           \bobcallout{+}{\huge AND計算}
+%         \end{column}
+%       \end{columns}
+%       {\centering\huge%
+%         $\underbrace{\hphantom{\rule{\columnwidth}{0ex}}}_{}$\\
+%         \mcfamily\rmfamily\bfseries ハイブリッドプロトコル%
+%       }
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{コイントスとAND計算のハイブリッドプロトコル}
+
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \uncover<+-> {
+%         \bobcallout{+}{%
+%           表\ref{tbl:choice_and_info_leak}のようにランダム\footnotemark[3] を導入したうえで、\\
+%           不本意な結果を強いられた側だけが\\
+%           相手の希望を得るというのはどうか？
+%         }
+%       }
+
+%       \footnotetext[3]{コイントス同様に奢り・割勘それぞれ$\frac{1}{2}$の確率}
+%     \end{column}
+%     \uncover<1->{
+%       \begin{column}{0.4\textwidth}
+%           \begin{table}[h]
+%             \caption{奢り・割勘と情報リーク}
+%             \label{tbl:choice_and_info_leak}
+%             \begin{tabular}{|c|c|c|c|}
+%               \hline
+%               アリス & ボブ & 結果   & 情報 \\ \hline
+%               割勘  & 割勘 & 割勘   & \dagger \\ \hline
+%               割勘  & 奢り & ランダム & \ddagger \\ \hline
+%               奢り  & 割勘 & ランダム & \ddagger  \\ \hline
+%               奢り  & 奢り & 奢り   & \dagger \\ \hline
+%             \end{tabular}
+
+%             \footnotetext[1]{お互いの希望はいずれもリークしない} 
+%             \footnotetext[2]{結果が奢りの場合はアリスの希望がボブへ、結果が割勘の場合はボブの希望がアリスへリークする}
+%           \end{table}
+%       \end{column}
+%     }
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{手順}
+
+%   このプロトコルはチャーリー（\emph{trusted third party}）\textbf{なし}で達成できる
+
+%   \pause
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \begin{enumerate}
+%         \item アリス・ボブに2枚のカード\heartcard,\clubcard を配る\footnote{%
+%           これらのカードはトランプのようにいずれも裏が\commitedcard となっており、
+%           裏向きになった状態でどちらのカードなのか特定することができない
+%         }
+%         \item アリス・ボブは表\ref{tbl:card_meaning}に従って
+%         希望を裏向き\commitedcard にして提出する\label{enum:cards_commited}
+
+%         \item \ballref{enum:cards_commited}で提出されたカードをシャッフルする
+        
+%         \item どちらか1枚をドローして表向きにする \label{enum:result}
+%       \end{enumerate}
+
+%       \ballref{enum:result}のカードを表\ref{tbl:card_meaning}に対応させてプロトコルの結果とする
+%     \end{column}
+%     \begin{column}{0.4\textwidth}
+%       \begin{table}[h]
+%         \caption{カードの意味}
+%         \label{tbl:card_meaning}
+%         \begin{tabularx}{0.9\textwidth}{@{}| Y | Y |@{}}
+%           \hline
+%           カード & 意味 \\ \hline
+%           \heartcard & ボブの奢り \\ \hline
+%           \clubcard & 割勘 \\ \hline
+%         \end{tabularx}
+%       \end{table}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{ケーススタディ\ballcircle{1} --- 2人の希望が一致}
+
+%   \pause
+%   \begin{itemize}
+%     \item<+-> 2人の希望が一致しているので次のようなケース
+%       \begin{columns}
+%         \begin{column}{0.5\textwidth}
+%           \alicecallout{+}{\heartcard}
+%         \end{column}
+%         \begin{column}{0.5\textwidth}
+%           \bobcallout{-}{\heartcard}
+%         \end{column}
+%       \end{columns}
+
+%     \item<+-> これらをシャッフルして1枚選んだときは必ず\heartcard となる
+
+%     \item<+-> そしてこのときアリス・ボブは相手のカードについて
+%     \begin{itemize}
+%       \item 両方とも\heartcard だったのか
+%       \item 相手は\clubcard だったがランダムで\heartcard が選ばれたのか
+%     \end{itemize}
+%     \ce{:point_up:}のどちらなのか分からず、情報リークはない
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{ケーススタディ\ballcircle{2} --- 2人の希望が衝突}
+
+%   \begin{itemize}
+%     \item<+-> 2人の希望が衝突しているので次のようなケース
+%       \begin{columns}
+%         \begin{column}{0.5\textwidth}
+%           \alicecallout{+}{\heartcard}
+%         \end{column}
+%         \begin{column}{0.5\textwidth}
+%           \bobcallout{-}{\clubcard}
+%         \end{column}
+%       \end{columns}
+
+%     \item<+-> これらをシャッフルしてランダムに選べば、結果は\heartcard,\clubcard それぞれ$\frac{1}{2}$の確率になる
+%     \begin{description}
+%       \item[結果が\heartcard]<+->\mbox{}\\
+%       \begin{itemize}
+%         \item アリスの希望通りとなるが、結果がボブの希望通りかランダムか不明
+%         \item ボブは衝突してアリスの希望\heartcard になったと特定
+%       \end{itemize}
+
+%       \item[結果が\clubcard]<+-> 同様
+%     \end{description}
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{コイントスとAND計算のハイブリッドプロトコル}
+
+%   \bobcallout{+}{%
+%     期待値的にはボブが不公平なままだが、\\
+%     もし不本意に奢った場合はアリスのがめつさが分かる
+%   }
+
+%   \pause
+%   \alicecallout{-}{%
+%     このときアリスはボブの奢りが本意か\\
+%     不本意か分からないが、奢られを得る
+%   }
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{コイントスとAND計算のハイブリッドプロトコル}
+
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \uncover<+->{
+%         \alicecallout{+}{%
+%           逆にアリスが不本意に\\
+%           割勘となってしまった場合、\\
+%           ボブの希望は割勘だと特定する
+%         }
+%       }
+
+%       \uncover<+->{
+%         \bobcallout{-}{%
+%           しかしこのときボブは\\
+%           アリスの希望が分からない
+%         }
+%       }
+%     \end{column}
+%     \begin{column}{0.4\textwidth}
+%       \uncover<+(-2)->{
+%         \begin{itemize}
+%           \item アリスが不本意に割勘となった場合、
+%           アリスは奢りを希望していたがボブは割勘を希望しており、
+%           ランダムで割勘となった
+
+%           \item<2-> このように希望通りになった側は相手の希望が分からず、
+%           希望通りにならかった側は相手の希望を知ることができる
+%         \end{itemize}
+%       }
+%     \end{column}
+%   \end{columns}
+% \end{frame}
+
+\section{まとめ}
+
+\begin{frame}
+  \frametitle{まとめ}
+
+  \pause
+  \begin{itemize}
+    \item<+-> 簡単なプロトコルで奢り・割勘問題に決着をつけられるかもしれない
+    \begin{itemize}
+      \item 2人の参加者は安目・高目と情報を賭博する
+    \end{itemize}
+
+    \item<+-> 今回紹介した技術は``Covert Lottery\cite{covert_lottery}''という名前が付いている
+    \begin{itemize}
+      \item Covert Lotteryを量子コンピューターでやるという記事\cite{quantum_covert_lottery}を過去に書いた
+    \end{itemize}
+
+    \item<+-> 今回は2人だったが、これを多人数拡張すると別のゲームに使えるかも\ce{:thinking_face:}
+  \end{itemize}
+\end{frame}
+
+\section*{参考文献}
+\begin{frame}%[allowframebreaks]
+  \frametitle{参考文献}
+  \nocite{*}
+  \bibliographystyle{junsrt_url}
+  \bibliography{ref}
+\end{frame}
+
+\begin{frame}
+  \centering
+  {\Huge Thank you for the attention!}
+\end{frame}
+
+\end{document}

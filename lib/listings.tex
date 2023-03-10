@@ -1,0 +1,254 @@
+\newfontfamily{\listingfont}[Scale=0.85]{Menlo}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\makeatletter
+\lst@CCPutMacro\lst@ProcessOther {"2D}{\lst@ttfamily{-{}}{-{}}}
+\@empty\z@\@empty
+\makeatother
+
+\lstdefinestyle{csharp}{
+  numbers=left,
+  language=[Sharp]C
+}
+
+\lstdefinestyle{cil}{
+  numbers=left,
+  language=CIL
+}
+
+\lstdefinestyle{plain}{
+  basicstyle=\listingfont\scriptsize,
+  language=Plain,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\listingfont\scriptsize\color{mauve},
+  tabsize=2
+}
+
+\lstdefinestyle{sh}{
+  numbers=left,
+  language=sh
+}
+
+\lstdefinestyle{c}{
+  numbers=left,
+  language=C
+}
+
+\lstdefinestyle{python}{
+  numbers=left,
+  language=Python
+}
+
+\lstdefinestyle{asm-x86}{
+  numbers=left
+}
+
+\lstdefinestyle{pseudo-code}{
+  numbers=left,
+  keywords=[6]{for,from,to,endfor,while,endwhile}
+}
+
+\lstdefinestyle{bitcoin-script}{
+  mathescape=true
+}
+
+\lstset{
+  basicstyle=\listingfont,
+  frame=single,
+  xleftmargin=2em,
+  xrightmargin=1em,
+  breaklines=true
+}
+
+\lstdefinestyle{scala}{
+  basicstyle=\listingfont\scriptsize,
+  breakatwhitespace=false,
+  language=scala,
+  captionpos=b,
+  commentstyle=\listingfont\scriptsize\color{dkgreen},
+  extendedchars=true,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  keepspaces=true,
+  keywordstyle=\listingfont\scriptsize\color{blue},
+  emphstyle=\listingfont\scriptsize\color{cyan},
+  rulecolor=\listingfont\scriptsize\color{black},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\listingfont\scriptsize\color{mauve},
+  tabsize=2
+}
+
+\lstdefinestyle{go}{
+  basicstyle=\listingfont\scriptsize,
+  breakatwhitespace=false,
+  language=go,
+  captionpos=b,
+  commentstyle=\listingfont\scriptsize\color{dkgreen},
+  extendedchars=true,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  keepspaces=true,
+  keywordstyle=\listingfont\scriptsize\color{blue},
+  emphstyle=\listingfont\scriptsize\color{cyan},
+  rulecolor=\listingfont\scriptsize\color{black},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\listingfont\scriptsize\color{mauve},
+  tabsize=2
+}
+
+\lstdefinestyle{js}{
+  basicstyle=\listingfont\scriptsize,
+  breakatwhitespace=false,
+  language=JavaScript,
+  captionpos=b,
+  commentstyle=\listingfont\scriptsize\color{dkgreen},
+  extendedchars=true,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  keepspaces=true,
+  keywordstyle=\listingfont\scriptsize\color{blue},
+  emphstyle=\listingfont\scriptsize\color{cyan},
+  rulecolor=\listingfont\scriptsize\color{black},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\listingfont\scriptsize\color{mauve},
+  tabsize=2
+}
+
+\lstdefinestyle{css}{
+  basicstyle=\listingfont\scriptsize,
+  breakatwhitespace=false,
+  language=CSS,
+  captionpos=b,
+  commentstyle=\listingfont\scriptsize\color{dkgreen},
+  extendedchars=true,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  keepspaces=true,
+  keywordstyle=\listingfont\scriptsize\color{blue},
+  emphstyle=\listingfont\scriptsize\color{cyan},
+  rulecolor=\listingfont\scriptsize\color{black},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\listingfont\scriptsize\color{mauve},
+  tabsize=2
+}
+
+\lstdefinestyle{html}{
+  basicstyle=\listingfont\scriptsize,
+  breakatwhitespace=false,
+  language=HTML5,
+  captionpos=b,
+  commentstyle=\listingfont\scriptsize\color{dkgreen},
+  extendedchars=true,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  keepspaces=true,
+  keywordstyle=\listingfont\scriptsize\color{blue},
+  emphstyle=\listingfont\scriptsize\color{cyan},
+  rulecolor=\listingfont\scriptsize\color{black},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\listingfont\scriptsize\color{mauve},
+  tabsize=2
+}
+
+\lstdefinelanguage{Plain}{
+  morestring=[b]",
+  morestring=[b]'
+}
+
+\lstdefinelanguage{scala}{
+  morekeywords={abstract,case,catch,class,def,%
+    do,else,extends,false,final,finally,%
+    for,if,implicit,import,match,mixin,%
+    new,null,object,override,package,%
+    private,protected,requires,return,sealed,%
+    super,this,throw,trait,true,try,%
+    type,val,var,while,with,yield},
+  moreemph={Byte,Short,Int,Long,Float,Double,Char,
+    String,Boolean,Unit,Null,Nothing,Any,AnyRef,
+    Left,Right,Either},
+  otherkeywords={=>,<-,<\%,<:,>:,\#,@},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[n]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]"""
+}
+
+\lstdefinelanguage{golang}%
+  {morekeywords=[1]{package,import,func,type,struct,return,defer,panic,%
+     recover,select,var,const,iota},%
+   morekeywords=[2]{string,uint,uint8,uint16,uint32,uint64,int,int8,int16,%
+     int32,int64,bool,float32,float64,complex64,complex128,byte,rune,uintptr,%
+     error,interface},%
+   morekeywords=[3]{map,slice,make,new,nil,len,cap,copy,close,true,false,%
+     delete,append,real,imag,complex,chan,},%
+   morekeywords=[4]{for,break,continue,range,go,goto,switch,case,fallthrough,if,%
+     else,default,},%
+   morekeywords=[5]{Println,Printf,Error,Print,},%
+   sensitive=true,%
+   morecomment=[l]{//},%
+   morecomment=[s]{/*}{*/},%
+   morestring=[b]',%
+   morestring=[b]",%
+   morestring=[s]{`}{`},%
+}
+
+\lstdefinelanguage{JavaScript}{%
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstdefinelanguage{CSS}{
+  keywords={url},
+  morekeywords={@import},
+  keywordstyle=\color{blue},
+  morecomment=[s]{/*}{*/}
+}
+
+\lstdefinelanguage{HTML5}{
+    sensitive=true,
+    keywords={%
+    % JavaScript
+    typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break,
+    % HTML
+    html, title, meta, style, head, body, script, canvas,
+    % CSS
+    border:, transform:, -moz-transform:, transition-duration:, transition-property:,
+    transition-timing-function:
+    },
+    % http://texblog.org/tag/otherkeywords/
+    otherkeywords={<, >, \/},   
+    ndkeywords={class, export, boolean, throw, implements, import, this},   
+    comment=[l]{//},
+    % morecomment=[s][keywordstyle]{<}{>},  
+    morecomment=[s]{/*}{*/},
+    morecomment=[s]{<!}{>},
+    morestring=[b]',
+    morestring=[b]",    
+    alsoletter={-},
+    alsodigit={:}
+}

@@ -1,0 +1,18 @@
+\newcommand\card[2]{%
+  \setlength{\fboxsep}{0pt}%
+  \fcolorbox{black}{#1}{%
+    \hphantom{\rule{0.05em}{0ex}}%
+    #2%
+    \hphantom{\rule{0.05em}{0ex}}%
+    \vphantom{\rule[-0.5ex]{0em}{2.5ex}}%
+  }%
+}%
+\definecolor{coolblack}{rgb}{0.0, 0.18, 0.39}
+\newcommand\heartcard{\card{white}{\color{red}{♥}}}
+\newcommand\clubcard{\card{white}{\color{coolblack}{♣}}}
+\newcommand\commitedcard{\card{gray!20}{\hphantom{\rule{0.28em}{0ex}}?\hphantom{\rule{0.28em}{0ex}}}}%}}
+% \def\yescards{\heartcard\,\heartcard\,\clubcard}
+% \def\nocards{\heartcard\,\clubcard\,\clubcard}
+% \def\threecommitedcards{\commitedcard\,\commitedcard\,\commitedcard}
+% \def\threeheartcards{\heartcard\,\heartcard\,\heartcard}
+% \def\threeclubcards{\clubcard\,\clubcard\,\clubcard}
