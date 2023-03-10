@@ -236,18 +236,31 @@
 
 \begin{document}
 
-\frame{\maketitle}
+\frame{%
+  \maketitle
+  \note{%
+    \vspace*{\fill}
+    \centering
+    {\LARGE Datatype Generic Programming on Scala 3}
+    \vspace{2ex}
+    
+    \begin{itemize}
+      \item こっちのページは日本語の説明となります。
+    \end{itemize}
+    \vspace*{\fill}
+  }%
+}
 
-\section{はじめに}
+\section{Introduction}
 
 \begin{frame}
-  \frametitle{目次}
+  \frametitle{Table of contents}
 
   \tableofcontents
 \end{frame}
 
 \begin{frame}
-  \frametitle{自己紹介}
+  \frametitle{Who am I?}
   
   \begin{columns}
     \begin{column}{0.3\textwidth}
@@ -267,27 +280,48 @@
     \end{column}
     \begin{column}{0.7\textwidth}
       \begin{itemize}
-        \item 筑波大学 情報学群 情報科学類卒（2011-15,学士）
+        \item Recruit Co., Ltd.
         \begin{itemize}
-          \item プログラム論理研究室、WORD編集部
+          \item StudySapuri ENGLISH server side
         \end{itemize}
+
+        \item Quantum Information \& Algorithms
+
+        \item Cryptography \& Security
         
-        \item ドワンゴ ニコニコ動画 アカウントチーム
-
-        \item 未踏ターゲット2018（ゲート式量子コンピュータ）
-
-        \item CTF（\url{https://urandom.team/}）
+        \item Progarmming \& \LaTeX typesetting
         \begin{itemize}
-          \item SECCON CTF 2022で世界57位（国内20位）
-        \end{itemize}
-
-        \item プログラミング
-        \begin{itemize}
-          \item Scala, \LaTeX, Rust, Go, Swift
+          \item Scala, Rust, Go, Swift
         \end{itemize}
       \end{itemize}
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Scala 3 usage at StudySapuri ENGLISH}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Meta-programming between Scala 2 and 3}
+\end{frame}
+
+\section{Datatype generic programming}
+
+\begin{frame}
+  \frametitle{What is ``datatype generic programming''}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Datatype generic programming \textit{vs.} Macros}
+\end{frame}
+
+\begin{frame}
+  \frametitle{``shapeless'' --- datatype generic programming in Scala 2}
+\end{frame}
+
+\begin{frame}
+  \frametitle{shapeless in Scala 3...}
 \end{frame}
 
 % \section{奢り・割勘問題}
@@ -732,10 +766,10 @@
 %   \end{columns}
 % \end{frame}
 
-\section{まとめ}
+\section{Conclusion}
 
 \begin{frame}
-  \frametitle{まとめ}
+  \frametitle{Conclusion}
 
   \pause
   \begin{itemize}
