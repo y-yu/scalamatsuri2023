@@ -241,7 +241,7 @@
   \note{%
     \vspace*{\fill}
     \centering
-    {\LARGE Datatype Generic Programming on Scala 3}
+    {\LARGE Datatype Generic Programming with Scala 3}
     \vspace{2ex}
     
     \begin{itemize}
@@ -289,7 +289,7 @@
 
         \item Cryptography \& Security
         
-        \item Progarmming \& {\LaTeX} typesetting
+        \item Programming \& {\LaTeX} typesetting
         \begin{itemize}
           \item Scala, Rust, Go, Swift
         \end{itemize}
@@ -298,30 +298,301 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Scala 3 usage at StudySapuri ENGLISH}
+\begin{frame}[fragile]
+  \frametitle{\lstinline|TestObject|: generating fixtures for unit tests}
+
+  \begin{itemize}
+    \item We uses \lstinline|TestObject| on our product,
+    which is a utility to generate dummy objects(as known as \emph{fixtures}) for unit tests.
+\begin{lstlisting}[style=scala]
+case class StudySapuriSession(
+  /* very complicated! */
+)
+val dummyData = TestObject.get[StudySapuriSession]
+\end{lstlisting}
+
+    \item Type class \lstinline|TestObject[A]| provides us to the way for generating some value of \lstinline|A|.
+\begin{lstlisting}[style=scala]
+trait TestObject[A] {
+  def generate: State[Int, A]
+}
+\end{lstlisting}
+
+    \item In naive way, we have to define too many \lstinline|TestObject| implicit instances for
+    every types used in our product, but it's not possible and reasonable.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Meta-programming between Scala 2 and 3}
+  \frametitle{\lstinline|TestObject|: generating fixtures for unit tests}
+
+  \begin{itemize}
+    \item The many \lstinline|TestObject| instances can be provided by
+    \emph{datatype generic programming}, not manually.
+    \begin{itemize}
+      \item We can get \lstinline|dummyData: StudySapuriSession| easily once we define
+      \lstinline|TestObject| instances for primitive types,
+      \item Then datatype generic programming generates the other instances for our
+      defined data structures(= case objects).
+    \end{itemize}
+
+    \item In this talk I'll explain what the differences of datatype generic programming
+    between Scala 2 and 3.
+  \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item TODO: タイトルどうにかする
+    \end{itemize}
+  }
 \end{frame}
 
-\section{Datatype generic programming}
+\begin{frame}[fragile]
+  \frametitle{What is datatype generic programming}
 
-\begin{frame}
-  \frametitle{What is ``datatype generic programming''}
+  \begin{itemize}
+    \item Datatype generic programming is the way of meta-programming.
+
+    \item If we would use raw macros, we can create a new syntax like S-expression in Scala source,
+    but we don't want it.
+    %\begin{itemize}
+    %  \item I think template meta-programming in C++ allows us to prevent creating a new syntax.
+    %\end{itemize}
+
+    \item Every data structure can be classified either ``tuple'' like or ``enum'' like:
+    \begin{columns}
+      \begin{column}{0.4\textwidth}
+\begin{lstlisting}[style=scala, caption=tuple like]
+case class TupleLike(
+  field1: Int, field2: String
+)
+\end{lstlisting}
+      \end{column}
+      \begin{column}{0.6\textwidth}
+\begin{lstlisting}[style=scala, caption=enum like]
+sealed trait EnumLike
+case class Pattern1(v: Int)    extends EnumLike
+case class Pattern2(v: String) extends EnumLike
+\end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item \lstinline|TupleLike| requires both two values of \lstinline|Int| and \lstinline|String|,
+      on the other hand \lstinline|EnumLike| requires either \lstinline|Int| value or \lstinline|String| value.
+    \end{itemize}
+
+    \item Datatype generic programming provides us to such abstraction
+    for arbitrary types.
+  \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item TODO: ``Datatype generic programming provides us to such abstraction
+      for arbitrary types.''これもうちょっといい感じにする
+      \begin{itemize}
+        \item タプルとかenumのように抽象化する、みたいなニュアンス加える
+      \end{itemize}
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}
-  \frametitle{Datatype generic programming \textit{vs.} Macros}
+  \frametitle{What is datatype generic programming}
+  
+  \begin{itemize}
+    \item Almost all meta-programming can be done by such datatype abstraction
+    and ad-hoc polymorphism, without probability of creating a new syntax.
+    \begin{enumerate}
+      \item First convert user defined data structures(= case objects) to tuple or enum like using datatype generic programming
+      \item Then find some implicit instances based on the types
+      \item Finally convert the derived instance for tuple or enum like to one for the original data type.
+    \end{enumerate}
+
+    \item We uses ``shapeless''\cite{shapeless_github} for datatype generic programming in Scala 2.
+  \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item TODO: ユーザー定義データ構造とdatatype generic programmingとad-hoc多相の関係を図にする
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}
-  \frametitle{``shapeless'' --- datatype generic programming in Scala 2}
+  \frametitle{Macro compatibility between Scala 2 and 3}
+
+  \begin{itemize}
+    \item Likewise on our product ``StudySapuri ENGLISH'', 
+    we are compiling both of Scala 2 and 3 for almost every code.
+
+    \item There is no compatibility of \emph{macros} between Scala 2 and 3 \ce{:innocent:}
+
+    \item It follows that \lstinline|TestObject| implemented on Scala 2 won't work well on Scala 3.
+
+    \item shapeless for Scala 3 is being developed but unfortunately
+     it's no compatibility shapeless for Scala 2 \ce{:innocent:}
+
+    \item Eventually we(mainly ScalaNinja) implemented \lstinline|TestObject| for Scala 3
+  \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{shapeless in Scala 3...}
+\section{Datatype generic programming in Scala 3}
+
+\begin{frame}[fragile]
+  \frametitle{Datatype generic programming in Scala 3}
+
+  \begin{itemize}
+    \item Scala 3 supports datatype generic programming initially like follows:
+    % using
+    % \lstinline|summonFrom|, \lstinline|Mirror.ProductOf| and \lstinline|Mirror.SumOf|.
+    \begin{columns}
+      \begin{column}{0.4\textwidth}
+\begin{lstlisting}[style=scala]
+import scala.compiletime.*
+import scala.deriving.*
+case class TupleLike(
+  field1: Int, field2: String
+)
+\end{lstlisting}
+      \end{column}
+      \begin{column}{0.6\textwidth}
+\begin{lstlisting}[style=scala]
+scala> Tuple.fromProductTyped(TupleLike(1, "a"))
+val res0: (Int, String) = (1,a)
+
+scala> summon[Mirror.ProductOf[TupleLike]].fromProduct(res0)
+val res1: TupleLike = TupleLike(1,a)
+\end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item We can use some functions to convert
+      case objects from/to tuple like without any libraries.
+    \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\lstinline|TestObject| implementation on Scala 3}
+
+  \begin{itemize}
+    \item We'll define \lstinline|derive| method such like:
+\begin{lstlisting}[style=scala]
+inline implicit def derive[A]: TestObject[A]
+\end{lstlisting}   
+    \begin{itemize}
+      \item \lstinline|derive| provides \lstinline|TestObject| instances for all \lstinline|A|.
+    \end{itemize}
+
+    \begin{enumerate}
+      \item Create the instances list of \lstinline|TestObject| using \lstinline|erasedValue|.
+    \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{1} Input type instance has been defined or not}
+
+  \begin{itemize}
+    \item \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|
+\begin{lstlisting}[style=scala]
+inline implicit def derive[A]: TestObject[A] =
+  summonFrom {
+    case x: TestObject[A] =>
+      x
+    case _ =>
+      create[A] // we'll define next page!
+  }
+\end{lstlisting}
+
+    \item If Scala 3 can find \lstinline|TestObject[A]| instance named by \lstinline|x|, then
+    it's unnecessary to define the instance so returns \lstinline|x|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{2} Input type is either product or sum}
+
+  \begin{itemize}
+    \item Otherwise there is no instance yet \lstinline|create| splits \lstinline|A| to
+    \lstinline|ProductOf| or \lstinline|SumOf|.
+\begin{lstlisting}[style=scala]
+inline final def create[A]: DeterministicTestObject[A] =
+  summonFrom {
+    case _: Mirror.ProductOf[A] =>
+      deriveProduct[A]
+    case _: Mirror.SumOf[A] =>
+      deriveSum[A]
+  }
+\end{lstlisting}
+
+    \item If it goes to case:
+    \begin{description}
+      \item[\texttt{ProductOf}] the input type \lstinline|A| is
+      tuple like (for example case objects).
+      
+      \item[\texttt{SumOf}] input type \lstinline|A| is enum like
+      \lstinline|sealed trait|.
+    \end{description}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{3a} \lstinline|Product| case}
+  
+  \begin{itemize}
+    \item We have to get all instances for types being contained in \lstinline|A|.
+    \begin{columns}
+      \begin{column}{0.6\textwidth}
+        \begin{itemize}
+          \item For example \lstinline|TupleLike| contains two type: \lstinline|Int| and \lstinline|String|.
+
+          \item We need the both instances of \lstinline|TestObject[Int]| and \lstinline|TestObject[String]|.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.3\textwidth}
+\begin{lstlisting}[style=scala]
+case class TupleLike(
+  field1: Int, field2: String
+)
+\end{lstlisting}
+      \end{column}
+    \end{columns}
+
+    \item \lstinline|erasedValue| allows us to search and create all instances recursively.
+\begin{lstlisting}[style=scala]
+inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
+  inline erasedValue[T] match {
+    case _: EmptyTuple =>
+      Nil
+    case _: (t *: ts) =>
+      derive[t] :: deriveRec[ts]
+  }
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{3a} \lstinline|Product| case}
+  
+  \begin{itemize}
+    \item Using \lstinline|deriveRec|, we finally define \lstinline|TestObject| instance for \lstinline|A|
+\begin{lstlisting}[style=scala]
+inline def deriveProduct[A](using a: Mirror.ProductOf[A]): TestObject[A] = {
+  val xs = deriveRec[a.MirroredElemTypes]
+  new TestObject[A] {
+    def generate: IntState[A] =
+      for {
+        values <- ApplicativeIntState
+          .traverse(xs)(_.generate.widen[Any])
+        _ <- modify[Int](_ + 1)
+      } yield a.fromProduct(new SeqProduct(values))
+  }
+}
+\end{lstlisting}
+  \end{itemize}
 \end{frame}
 
 % \section{奢り・割勘問題}
