@@ -595,6 +595,23 @@ inline def deriveProduct[A](using a: Mirror.ProductOf[A]): TestObject[A] = {
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{3b} \lstinline|Sum| case}
+
+  \begin{itemize}
+    \item 
+\begin{lstlisting}[style=scala],
+  final def sumImpl[A](values: List[DeterministicTestObject[?]]): DeterministicTestObject[A] =
+    new DeterministicTestObject[A] {
+      def generate: IntState[A] = {
+        for {
+          allResults <- ApplicativeIntState
+            .traverse(values)(_.generate.widen[Any])
+          l = allResults.minBy(_.getClass.getName)
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
 % \section{奢り・割勘問題}
 
 % \begin{frame}
