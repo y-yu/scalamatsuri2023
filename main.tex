@@ -599,17 +599,25 @@ inline def deriveProduct[A](using a: Mirror.ProductOf[A]): TestObject[A] = {
   \frametitle{\ballcircle{3b} \lstinline|Sum| case}
 
   \begin{itemize}
-    \item 
+    \item In \lstinline|Sum| case, we generate a value in \lstinline|values|.
 \begin{lstlisting}[style=scala],
   final def sumImpl[A](values: List[DeterministicTestObject[?]]): DeterministicTestObject[A] =
     new DeterministicTestObject[A] {
-      def generate: IntState[A] = {
+      def generate: IntState[A] =
         for {
-          allResults <- ApplicativeIntState
-            .traverse(values)(_.generate.widen[Any])
-          l = allResults.minBy(_.getClass.getName)
+          s <- State.get
+          value = values(values.length % s)
+          result <- value.generate
+        } yield result
+    }
 \end{lstlisting}
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item TODO: もうちょっと英語がんばる
+    \end{itemize}
+  }
 \end{frame}
 
 % \section{奢り・割勘問題}
@@ -1061,14 +1069,21 @@ inline def deriveProduct[A](using a: Mirror.ProductOf[A]): TestObject[A] = {
 
   \pause
   \begin{itemize}
-    \item<+-> S
+    \item<+-> There is no macro compatibility between Scala 3 and Scala 2 \ce{:innocent:}
+    \begin{itemize}
+      \item And shapeless 2 and 3 don't have the same interface.
+    \end{itemize}
+
+    \item Scala 3 supports datatype generic programming initially.
+
+    \item Happy meta-programming!
   \end{itemize}
 \end{frame}
 
 \section*{References}
 \begin{frame}%[allowframebreaks]
   \frametitle{References}
-  \nocite{*}
+  % \nocite{*}
   \bibliographystyle{junsrt_url}
   \bibliography{ref}
 \end{frame}
