@@ -878,7 +878,7 @@ inline def deriveSum[A](using a: SumOf[A]): TestObject[A] = {
 
   \begin{itemize}
     \item \lstinline|sumImpl| is very complicated\ce{:innocent}
-\begin{lstlisting}[style=scala],
+\begin{lstlisting}[style=scala]
 final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
   new TestObject[A] {
     def generate: IntState[A] =
@@ -915,8 +915,26 @@ final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
 
   \begin{itemize}
     \item I don't know why, anyway shapeless 2 sorts the instances by its type name\cite{shapeless2_sort}.
-
+  
     \item On the other hand, \lstinline|MirroredElemTypes| in Scala 3 are sorted by the definitions in source code.
+
+    \item For instance:
+    \begin{columns}
+      \begin{column}{0.28\textwidth}
+\begin{lstlisting}[style=scala]
+sealed trait X
+case object X3 extends X
+case object X2 extends X
+case object X1 extends X
+\end{lstlisting}
+      \end{column}
+      \begin{column}{0.57\textwidth}
+        \begin{itemize}
+          \item shapeless 2 returns \lstinline|X1 :+: X2 :+: X3|, which is sorted by alphabetical order,
+          \item but \lstinline|MirroredElemTypes| is \lstinline|X3 *: X2 *: X1|\ce{:innocent:}
+        \end{itemize}
+      \end{column}
+    \end{columns}
 
     \item So the \lstinline|minBy| and \lstinline|maxByOption| is needed for
     the compatibility of shapeless 2 behavior.
