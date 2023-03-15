@@ -567,6 +567,9 @@ val res1: TupleLike = TupleLike(1,a)
   \note{
     \begin{itemize}
       \item 実はScala 3はライブラリーなしでこのようにケースクラスをタプルに変換するなどの機構が用意されている
+
+      \item こんな感じで\lstinline|scala.compiletime|や\lstinline|scala.deriving|を引っ張ってくることで、
+      任意のケースクラスをそのフィールドの型に対応するタプルにしたり、タプルから構成したりできる
       
       \item 今回は紹介しない部分も含めて、Scala 3はメタプログラミングがScala 2に比べて強化されている
     \end{itemize}
@@ -585,14 +588,33 @@ inline implicit def derive[A]: TestObject[A]
       \item \lstinline|derive| provides \lstinline|TestObject| instances for all \lstinline|A|.
     \end{itemize}
 
-    \item This is the overview of making \lstinline|derive|:
+    \item This is the overview of \lstinline|derive| behavior:
     \begin{enumerate}
       \item Check if the instance for the input type has been defined.
-      \item If not, split the type into either tuple like or enum like.
-      \item Create the \emph{ill-typed} instances list of \lstinline|TestObject| using \lstinline|erasedValue| \label{enum:instances_list}.
+      \item If not found, pattern match the type into either tuple like or enum like. \label{enum:tuple_or_enum}
+      \item Collect the \emph{ill-typed} list of \lstinline|TestObject| for each types contained in \ballref{enum:tuple_or_enum}
+      using \lstinline|erasedValue| \label{enum:instances_list}.
       \item Finally make the instance for the input type using \ballref{enum:instances_list} instances list.
     \end{enumerate}
+
+    \item Let's see the details!
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item 今回の目標はScala 3のメタプロ機構で任意の型\lstinline|A|に対する\lstinline|TestObject[A]|を提供する
+      \lstinline|derive|メソッドをつくること
+
+      \item \lstinline|derive|は
+      \begin{enumerate}
+        \item すでに定義されているインスタンスがないか探して
+        \item もしなかったら、タプルかenumのケースへパターンマッチする
+        \item \lstinline|erasedValue|をつかって、上記のタプルかenumに入っている型のインスタンスを集めてきて
+        型なしリストに詰め込む
+        \item そして最後に\ce{:point_up:}のリストで材料をつくって最終的なインプットされた型のインスタンスをつくる
+      \end{enumerate}
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
@@ -610,52 +632,81 @@ inline implicit def derive[A]: TestObject[A] =
   }
 \end{lstlisting}
 
-    \item If Scala 3 can find \lstinline|TestObject[A]| instance named by \lstinline|x|, then
-    it's unnecessary to define the instance so returns \lstinline|x|.
+    \item If \lstinline|summonFrom| finds the \lstinline|TestObject[A]| instance,
+    then the instance would be named as \lstinline|x|.
+    \begin{itemize}
+      \item In this case, it's unnecessary to define the instance so returns \lstinline|x|.
+    \end{itemize}
+
+    \item In the latter case, we call \lstinline|create| method to define \lstinline|TestObject[A]|.
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item \lstinline|summonFrom|をつかってインスタンスを探すことができる
+
+      \item もし見つかったらそれを返せばいい
+
+      \item そうでない場合、\lstinline|create|メソッドをつかって定義していく
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{2} Input type is either product or sum}
+  \frametitle{\ballcircle{2} Pattern matching if product or sum}
 
   \begin{itemize}
-    \item Otherwise there is no instance yet \lstinline|create| splits \lstinline|A| to
-    \lstinline|ProductOf| or \lstinline|SumOf|.
+    \item Since there is no \lstinline|TestInstance[A]| instance yet,
+    \lstinline|create| finds \lstinline|ProductOf[A]| or \lstinline|SumOf[A]|
+    instance using \lstinline|summonFrom| again.
 \begin{lstlisting}[style=scala]
 inline final def create[A]: TestObject[A] =
   summonFrom {
     case _: Mirror.ProductOf[A] =>
-      deriveProduct[A]
+      deriveProduct[A] // 1
     case _: Mirror.SumOf[A] =>
-      deriveSum[A]
+      deriveSum[A]     // 2
   }
 \end{lstlisting}
 
-    \item If it goes to case:
-    \begin{description}
-      \item[\texttt{ProductOf}] the input type \lstinline|A| is
-      tuple like (for example case objects).
-      
-      \item[\texttt{SumOf}] input type \lstinline|A| is enum like
-      \lstinline|sealed trait|.
-    \end{description}
+    \item It means that:
+    \begin{enumerate}
+      \item \lstinline|A| is a tuple like type (i.e. case classes)
+      if there is a \lstinline|ProductOf[A]| instance,
+      \item \lstinline|A| is an enum like structure (i.e. sealed traits).
+      if there is a \lstinline|SumOf[A]| instance.
+    \end{enumerate}
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item \lstinline|TestInstance[A]|が見つからなかったので、
+      \lstinline|create|では再び\lstinline|summonFrom|を使って
+      \lstinline|ProductOf[A]|か\lstinline|SumOf[A]|のインスタンスを探す
+      \begin{itemize}
+        \item もし\lstinline|ProductOf[A]|が見つかったら、型\lstinline|A|は
+      ケースクラスなどのタプル的なデータ構造であり、
+        \item 一方で\lstinline|SumOf[A]|のインスタンスが見つかれば、
+        型\lstinline|A|はsealed traitなどのenum的なデータ構造である
+      \end{itemize}
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{3a} \lstinline|Product| case}
+  \frametitle{\ballcircle{3} Make \emph{ill-typed} instances list: \lstinline|List[TestObject[?]]|}
   
   \begin{itemize}
-    \item We have to get all instances for types being contained in \lstinline|A|.
+    \item Before see \lstinline|deriveProduct| and \lstinline|deriveSum|,
+    we have to prepare the way to collect all instances for types being contained in \lstinline|A|.
     \begin{columns}
-      \begin{column}{0.6\textwidth}
+      \begin{column}{0.55\textwidth}
         \begin{itemize}
-          \item For example \lstinline|TupleLike| contains two type: \lstinline|Int| and \lstinline|String|.
-
-          \item We need the both instances of \lstinline|TestObject[Int]| and \lstinline|TestObject[String]|.
+          \item For example \lstinline|TupleLike|, 
+          we need the both instances of \lstinline|TestObject[Int]| and \lstinline|TestObject[String]|.
         \end{itemize}
       \end{column}
-      \begin{column}{0.3\textwidth}
+      \begin{column}{0.35\textwidth}
 \begin{lstlisting}[style=scala]
 case class TupleLike(
   field1: Int, field2: String
@@ -664,38 +715,64 @@ case class TupleLike(
       \end{column}
     \end{columns}
 
-    \item \lstinline|erasedValue| allows us to search and create all instances recursively.
+    \item \lstinline|erasedValue| allows us to search and collect all instances recursively.
+    \begin{columns}
+      \begin{column}{0.6\textwidth}
 \begin{lstlisting}[style=scala]
 inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
   inline erasedValue[T] match {
     case _: EmptyTuple =>
       Nil
     case _: (t *: ts) =>
-      derive[t] :: deriveRec[ts]
+      derive[t]/* mutual recursion */ :: deriveRec[ts]
   }
 \end{lstlisting}
+      \end{column}
+      \begin{column}{0.3\textwidth}
+        \item There is no type compatibility among the instances,
+        \lstinline|deriveRec| cannot help but to return \emph{ill-typed} list\ce{:innocent:}
+      \end{column}
+    \end{columns}
+
+    \item In addition \lstinline|*:| is type-level tuple constructor
+    provided since Scala 3.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{3a} \lstinline|Product| case}
+  \frametitle{\ballcircle{4a} \lstinline|deriveProduct| case}
   
   \begin{itemize}
-    \item Using \lstinline|deriveRec|, we finally define \lstinline|TestObject| instance for \lstinline|A|
+    \item Using \lstinline|deriveRec|, we define \lstinline|TestObject| instance for \lstinline|A|
+    in \lstinline|deriveProduct| case.
 \begin{lstlisting}[style=scala]
-inline def deriveProduct[A](using a: Mirror.ProductOf[A]): TestObject[A] = {
-  val xs = deriveRec[a.MirroredElemTypes]
-  new TestObject[A] {
-    def generate: IntState[A] =
-      for {
-        values <- ApplicativeIntState
-          .traverse(xs)(_.generate.widen[Any])
-        _ <- modify[Int](_ + 1)
-      } yield a.fromProduct(new SeqProduct(values))
+inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
+  def p: TestObject[A] = {
+    val xs = deriveRec[a.MirroredElemTypes]
+    productImpl[A](xs, a)
   }
+  p
 }
 \end{lstlisting}
+    \begin{itemize}
+      \item Why does \lstinline|deriveProduct| only call \lstinline|productImpl|
+      through temporary method \lstinline|p|?\ce{:thinking:}
+    \end{itemize}
+
+    \item This is the ScalaNinja's remarkable and state-of-the-art technique to
+    avoid
+    \begin{itemize}
+      \item throwing \lstinline|MethodTooLargeException| due to \lstinline|inline|
+      \item and generating too many nameless classes instead of nameless class.
+    \end{itemize}
+
+    \item In meta-programming, we have to consider about compiling efficiency, not only runtime.
+    That's maybe the why meta-programming is difficult\ce{:innocent:}
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{4a} \lstinline|deriveProduct| case}
 \end{frame}
 
 \begin{frame}[fragile]
