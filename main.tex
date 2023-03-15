@@ -789,7 +789,7 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
     avoid
     \begin{itemize}
       \item throwing \lstinline|MethodTooLargeException| due to \lstinline|inline|
-      \item and generating too many nameless classes using method \lstinline|p|.
+      \item and generating too many nameless classes.
     \end{itemize}
 
     \item In meta-programming, we have to consider about compiling efficiency, not only runtime.
