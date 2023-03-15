@@ -250,7 +250,9 @@
     \vspace{2ex}
     
     \begin{itemize}
-      \item こっちのページは日本語の説明となります。
+      \item こっちのページは日本語の説明で、実際の発表では表示されません
+
+      \item ただオーディエンス向けに事前に配っておく資料的な感じで利用する予定です
     \end{itemize}
     \vspace*{\fill}
   }%
@@ -351,6 +353,8 @@ implicit val strInstance: TestObject[String] = new TestObject {
     \end{itemize}
   }
 \end{frame}
+
+\section{Overview of datatype generic programming}
 
 \begin{frame}
   \frametitle{\lstinline|TestObject| with datatype generic programming}
@@ -493,10 +497,9 @@ case class Pattern2(v: String) extends EnumLike
   \begin{itemize}
     \item We use \emph{shapeless}\cite{shapeless_github} for datatype generic programming in Scala 2.
 
-    \item Likewise on our product ``StudySapuri ENGLISH'', 
-    we are compiling both of Scala 2 and 3 for almost all code.
+    \item Likewise on our product, we are compiling both of Scala 2 and 3 for almost all code.
 
-    \item There is no compatibility of \emph{macros} between Scala 2 and 3 \ce{:innocent:}
+    \item There is no compatibility of macros between Scala 2 and 3 \ce{:innocent:}
 
     \item It follows that \lstinline|TestObject| implemented on Scala 2 won't work well on Scala 3.
     \begin{itemize}
@@ -506,6 +509,21 @@ case class Pattern2(v: String) extends EnumLike
 
     \item Eventually we(mainly ScalaNinja) began to develop another \lstinline|TestObject| implementation for Scala 3
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item 我々はScala 2でのdatatype generic programmingにshapelessをつかっている
+
+      \item ところで、我々のプロダクトはScala 3でもほぼ全てのコードをコンパイルしている
+
+      \item そしてScala 2と3でマクロの互換性がない
+
+      \item つまりScala2で作ってあった\lstinline|TestObject|はScala 3では動かない。
+      Scala 3対応したshapeless 3も作らてはいるが、これはshapeless 2とは別物というくらいに互換性がない
+
+      \item そういうわけでScala 3版の\lstinline|TestObject|を作ることになった
+    \end{itemize}
+  }
 \end{frame}
 
 \section{Datatype generic programming in Scala 3}
@@ -538,11 +556,21 @@ val res1: TupleLike = TupleLike(1,a)
       \end{column}
     \end{columns}
     \begin{itemize}
-      \item We can use some functions to convert
-      case objects from/to tuple like without any libraries.
+      \item Similarly we can convert \lstinline|sealed trait| to enum like.
     \end{itemize}
 
+    \item We can use some functions to convert case objects from/to tuple like without any libraries.
+
+    \item Meta-programming tools in Scala 3 is reinforced rather than Scala 2\ce{:thumbsup:}
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item 実はScala 3はライブラリーなしでこのようにケースクラスをタプルに変換するなどの機構が用意されている
+      
+      \item 今回は紹介しない部分も含めて、Scala 3はメタプログラミングがScala 2に比べて強化されている
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
@@ -557,15 +585,18 @@ inline implicit def derive[A]: TestObject[A]
       \item \lstinline|derive| provides \lstinline|TestObject| instances for all \lstinline|A|.
     \end{itemize}
 
+    \item This is the overview of making \lstinline|derive|:
     \begin{enumerate}
-      \item Create the instances list of \lstinline|TestObject| using \lstinline|erasedValue|.
+      \item Check if the instance for the input type has been defined.
+      \item If not, split the type into either tuple like or enum like.
+      \item Create the \emph{ill-typed} instances list of \lstinline|TestObject| using \lstinline|erasedValue| \label{enum:instances_list}.
+      \item Finally make the instance for the input type using \ballref{enum:instances_list} instances list.
     \end{enumerate}
   \end{itemize}
 \end{frame}
 
-
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{1} Input type instance has been defined or not}
+  \frametitle{\ballcircle{1} Check if the instance for the input type has been defined}
 
   \begin{itemize}
     \item \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|
@@ -591,7 +622,7 @@ inline implicit def derive[A]: TestObject[A] =
     \item Otherwise there is no instance yet \lstinline|create| splits \lstinline|A| to
     \lstinline|ProductOf| or \lstinline|SumOf|.
 \begin{lstlisting}[style=scala]
-inline final def create[A]: DeterministicTestObject[A] =
+inline final def create[A]: TestObject[A] =
   summonFrom {
     case _: Mirror.ProductOf[A] =>
       deriveProduct[A]
@@ -691,448 +722,6 @@ inline def deriveProduct[A](using a: Mirror.ProductOf[A]): TestObject[A] = {
     \end{itemize}
   }
 \end{frame}
-
-% \section{奢り・割勘問題}
-
-% \begin{frame}
-%   \frametitle{奢り・割勘問題}
-
-%   \begin{figure}[h]
-%     \includegraphics[width=0.65\textwidth]{./img/twitter.png}\cite{Y_N_Hoshi}
-%   \end{figure}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{奢り・割勘問題}
-
-%   \begin{shadequote}[r]{}
-%     \begin{center}
-%       アリスとボブの飲食費について下記のいずれにするか決定する問題
-%       \begin{enumerate}
-%         \item ボブが全額を奢る
-%         \item 割勘とする
-%       \end{enumerate}
-%     \end{center}
-%   \end{shadequote}
-
-%   \begin{columns}
-%     \begin{column}{0.5\textwidth}
-%       \centering
-%       \emph{アリス（Alice）}
-
-%       \begin{figure}[h]
-%         \includegraphics[height=0.4\textheight]{img/alice.png}
-%       \end{figure}
-%     \end{column}
-   
-%     \begin{column}{0.5\textwidth}
-%       \centering
-%       \emph{ボブ（Bob）}
-
-%       \begin{figure}[h]
-%         \includegraphics[height=0.4\textheight]{img/bob.png}
-%       \end{figure}
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \section{従来手法}
-
-% \begin{frame}
-%   \frametitle{従来手法\ballcircle{1} --- コイントス}
-
-%   \vspace{-0.2cm}
-%   \pause
-%   \begin{columns}
-%     \begin{column}{0.5\textwidth}
-%       \begin{enumerate}
-%         \item 2人でコイントスを行う
-
-%         \pause
-%         \item 表\ref{tbl:coin_meaning}に基づいて決定する
-%       \end{enumerate}
-
-%       \begin{table}[h]
-%         \caption{コインの意味}
-%         \label{tbl:coin_meaning}
-%         \begin{tabularx}{0.9\textwidth}{@{}| Y | Y |@{}}
-%           \hline
-%           コインの結果 & 意味 \\ \hline
-%           表 & ボブの奢り \\ \hline
-%           裏 & 割勘 \\ \hline
-%         \end{tabularx}
-%       \end{table}
-%     \end{column}
-%     \begin{column}{0.5\textwidth}
-%       \pause
-%       \bobcallout{+}{2人の意見が何も反映されないため\\
-%         プライバシーは完全\ce{:person_gesturing_ok:}%
-%       }
-    
-%       \pause
-%       \alicecallout{-}{しかしゲーム性は全くない}
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{従来手法\ballcircle{1} --- コイントス}
-
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \alicecallout{+}{そもそもこのゲームはアリスが有利\ce{:smiling_imp:}}
-
-%       \pause
-%       \bobcallout{-}{%
-%         そもそも不公平なゲームなので、\\
-%         50:50ではおもしろくない
-%       }
-%     \end{column}
-%     \begin{column}{0.4\textwidth}
-%       \begin{itemize}
-%         \item ボブが支払うのは安目で50\%高目で100\%だが、
-%         一方でアリスは安目0\%高目でも50\%
-%       \end{itemize}
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{従来手法\ballcircle{2} --- 公平な第三者を用いたAND計算}
-
-%   \pause
-%   \begin{enumerate}
-%     \item<+-> アリスとボブは公平な第三者チャーリーに$\text{\textbf{希望}} \in \{\text{奢り}, \text{割勘}\}$を渡す
-%     \item<+-> チャーリーはアリス・ボブの希望を次の表\ref{tbl:and_table}に基づいてAND演算する
-%     \item<+-> チャーリーが結果を2人に通知する
-%   \end{enumerate}
-
-%   \uncover<+(-2)->{
-%     \begin{table}[h]
-%       \caption{奢り・割勘AND演算}
-%       \label{tbl:and_table}
-%       \begin{tabularx}{0.7\textwidth}{@{}| Y | Y || Y |@{}}
-%         \hline
-%         アリス & ボブ & 結果 \\ \hline
-%         割勘  & 割勘 & 割勘 \\ \hline
-%         割勘  & 奢り & 割勘 \\ \hline
-%         奢り  & 割勘 & 割勘 \\ \hline
-%         奢り  & 奢り & 奢り \\ \hline
-%       \end{tabularx}
-%     \end{table}
-%   }
-
-%   \begin{itemize}
-%     \item<+(-1)-> ボブは期待値は$\frac{5}{8}$（62.5\%）の支払い、
-%     アリスは期待値$\frac{3}{8}$（37.5\%）の支払い
-%   \end{itemize}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{従来手法\ballcircle{2} --- 公平な第三者を用いたAND計算}
-  
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \bobcallout{+}{そもそもチャーリーが信頼できるのか？
-%       }
-
-%       \pause
-%       \alicecallout{-}{\noindent
-%         次のケース\ce{:point_down:}で\textbf{情報リーク}が生じる！\\
-%         \hbox to 0.5\textwidth{%
-%           \vbox{%
-%             \begin{enumerate}
-%               \item アリスが奢り、ボブは割勘を希望
-%               \item アリスが割勘、ボブは奢りを希望\label{enum:bob_detect}
-%               \item アリスが奢り、ボブは奢りを希望
-%             \end{enumerate}
-%           }
-%         }
-%       }
-%     \end{column}
-%     \begin{column}{0.4\textwidth}
-%       \begin{itemize}
-%         \item AND計算なので片方の入力と結果から、残りの入力を逆算できる場合がある
-%       \end{itemize}
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{従来手法\ballcircle{2} --- 公平な第三者を用いたAND計算}
-
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \alicecallout{+}{希望が場合によっては流出するのは\\
-%         ゲーム性とみなすことができそう！\ce{:smiling_imp:}
-%       }
-
-%       \pause
-%       \bobcallout{-}{しかしこの方法では\\
-%         アリスの希望は絶対にリークしない\ce{:rage:}%
-%       }
-%     \end{column}
-%     \begin{column}{0.4\textwidth}
-%       \begin{itemize}
-%         \item たとえば「アリスが奢り・ボブは割勘を希望」のとき、
-%         結果は割勘となる
-        
-%         \item アリスは奢ってもらえないが、ボブのケチさを知ることができる
-
-%         \item しかしアリスのがめつさ情報がリークすることはない
-
-%         \pause
-%         \item なぜなら\textbf{衝突}したときに
-%         ``奢り''になるケースがないから
-%       \end{itemize}
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{2人の希望の衝突}
-
-%   \pause
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \uncover<+-> {
-%         \alicecallout{+}{%
-%           2人の希望が一致したケースなら\\
-%           AND計算で問題ない%
-%         }
-%       }
-
-%       \uncover<+->{
-%         \bobcallout{-}{%
-%           一方で衝突（\textit{conflict}）した\\
-%           ケースは考える必要がある
-%         }
-%       }
-%     \end{column}
-%     \uncover<1->{
-%       \begin{column}{0.4\textwidth}
-%           \begin{table}[h]
-%             \caption{現状のコンセンサス}
-%             \label{tbl:conflict}
-%             \begin{tabularx}{0.9\textwidth}{@{}| Y | Y | X @{}}
-%               \cline{1-2}
-%               アリス & ボブ & \\ \cline{1-2}
-%               割勘  & 割勘 & \multirow{2}{\hsize}{$\bigg\}$\Large\ce{:person_gesturing_ok:}}\\ \cline{1-2}
-%               奢り  & 奢り &  \\ \cline{1-2}
-%               割勘  & 奢り & \multirow{2}{\hsize}{$\bigg\}$\Large\ce{:person_gesturing_no:}} \\ \cline{1-2}
-%               奢り  & 割勘 &   \\ \cline{1-2}
-%             \end{tabularx}
-%           \end{table}
-%       \end{column}
-%     }
-%   \end{columns}
-% \end{frame}
-
-% \section{提案手法}
-
-% \begin{frame}
-%   \centering
-%   \begin{columns}
-%     \begin{column}{0.2\textwidth}
-%       \begin{minipage}[t][.8\textheight][t]{\textwidth}
-%         \tableofcontents[currentsection]
-%       \end{minipage}
-%     \end{column}
-%     \begin{column}{0.8\textwidth}
-%       \centering
-%       \begin{columns}
-%         \begin{column}{0.45\columnwidth}
-%           \alicecallout{-}{\huge コイントス}
-%         \end{column}
-%         \begin{column}{0.45\columnwidth}
-%           \bobcallout{+}{\huge AND計算}
-%         \end{column}
-%       \end{columns}
-%       {\centering\huge%
-%         $\underbrace{\hphantom{\rule{\columnwidth}{0ex}}}_{}$\\
-%         \mcfamily\rmfamily\bfseries ハイブリッドプロトコル%
-%       }
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{コイントスとAND計算のハイブリッドプロトコル}
-
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \uncover<+-> {
-%         \bobcallout{+}{%
-%           表\ref{tbl:choice_and_info_leak}のようにランダム\footnotemark[3] を導入したうえで、\\
-%           不本意な結果を強いられた側だけが\\
-%           相手の希望を得るというのはどうか？
-%         }
-%       }
-
-%       \footnotetext[3]{コイントス同様に奢り・割勘それぞれ$\frac{1}{2}$の確率}
-%     \end{column}
-%     \uncover<1->{
-%       \begin{column}{0.4\textwidth}
-%           \begin{table}[h]
-%             \caption{奢り・割勘と情報リーク}
-%             \label{tbl:choice_and_info_leak}
-%             \begin{tabular}{|c|c|c|c|}
-%               \hline
-%               アリス & ボブ & 結果   & 情報 \\ \hline
-%               割勘  & 割勘 & 割勘   & \dagger \\ \hline
-%               割勘  & 奢り & ランダム & \ddagger \\ \hline
-%               奢り  & 割勘 & ランダム & \ddagger  \\ \hline
-%               奢り  & 奢り & 奢り   & \dagger \\ \hline
-%             \end{tabular}
-
-%             \footnotetext[1]{お互いの希望はいずれもリークしない} 
-%             \footnotetext[2]{結果が奢りの場合はアリスの希望がボブへ、結果が割勘の場合はボブの希望がアリスへリークする}
-%           \end{table}
-%       \end{column}
-%     }
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{手順}
-
-%   このプロトコルはチャーリー（\emph{trusted third party}）\textbf{なし}で達成できる
-
-%   \pause
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \begin{enumerate}
-%         \item アリス・ボブに2枚のカード\heartcard,\clubcard を配る\footnote{%
-%           これらのカードはトランプのようにいずれも裏が\commitedcard となっており、
-%           裏向きになった状態でどちらのカードなのか特定することができない
-%         }
-%         \item アリス・ボブは表\ref{tbl:card_meaning}に従って
-%         希望を裏向き\commitedcard にして提出する\label{enum:cards_commited}
-
-%         \item \ballref{enum:cards_commited}で提出されたカードをシャッフルする
-        
-%         \item どちらか1枚をドローして表向きにする \label{enum:result}
-%       \end{enumerate}
-
-%       \ballref{enum:result}のカードを表\ref{tbl:card_meaning}に対応させてプロトコルの結果とする
-%     \end{column}
-%     \begin{column}{0.4\textwidth}
-%       \begin{table}[h]
-%         \caption{カードの意味}
-%         \label{tbl:card_meaning}
-%         \begin{tabularx}{0.9\textwidth}{@{}| Y | Y |@{}}
-%           \hline
-%           カード & 意味 \\ \hline
-%           \heartcard & ボブの奢り \\ \hline
-%           \clubcard & 割勘 \\ \hline
-%         \end{tabularx}
-%       \end{table}
-%     \end{column}
-%   \end{columns}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{ケーススタディ\ballcircle{1} --- 2人の希望が一致}
-
-%   \pause
-%   \begin{itemize}
-%     \item<+-> 2人の希望が一致しているので次のようなケース
-%       \begin{columns}
-%         \begin{column}{0.5\textwidth}
-%           \alicecallout{+}{\heartcard}
-%         \end{column}
-%         \begin{column}{0.5\textwidth}
-%           \bobcallout{-}{\heartcard}
-%         \end{column}
-%       \end{columns}
-
-%     \item<+-> これらをシャッフルして1枚選んだときは必ず\heartcard となる
-
-%     \item<+-> そしてこのときアリス・ボブは相手のカードについて
-%     \begin{itemize}
-%       \item 両方とも\heartcard だったのか
-%       \item 相手は\clubcard だったがランダムで\heartcard が選ばれたのか
-%     \end{itemize}
-%     \ce{:point_up:}のどちらなのか分からず、情報リークはない
-%   \end{itemize}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{ケーススタディ\ballcircle{2} --- 2人の希望が衝突}
-
-%   \begin{itemize}
-%     \item<+-> 2人の希望が衝突しているので次のようなケース
-%       \begin{columns}
-%         \begin{column}{0.5\textwidth}
-%           \alicecallout{+}{\heartcard}
-%         \end{column}
-%         \begin{column}{0.5\textwidth}
-%           \bobcallout{-}{\clubcard}
-%         \end{column}
-%       \end{columns}
-
-%     \item<+-> これらをシャッフルしてランダムに選べば、結果は\heartcard,\clubcard それぞれ$\frac{1}{2}$の確率になる
-%     \begin{description}
-%       \item[結果が\heartcard]<+->\mbox{}\\
-%       \begin{itemize}
-%         \item アリスの希望通りとなるが、結果がボブの希望通りかランダムか不明
-%         \item ボブは衝突してアリスの希望\heartcard になったと特定
-%       \end{itemize}
-
-%       \item[結果が\clubcard]<+-> 同様
-%     \end{description}
-%   \end{itemize}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{コイントスとAND計算のハイブリッドプロトコル}
-
-%   \bobcallout{+}{%
-%     期待値的にはボブが不公平なままだが、\\
-%     もし不本意に奢った場合はアリスのがめつさが分かる
-%   }
-
-%   \pause
-%   \alicecallout{-}{%
-%     このときアリスはボブの奢りが本意か\\
-%     不本意か分からないが、奢られを得る
-%   }
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{コイントスとAND計算のハイブリッドプロトコル}
-
-%   \begin{columns}
-%     \begin{column}{0.6\textwidth}
-%       \uncover<+->{
-%         \alicecallout{+}{%
-%           逆にアリスが不本意に\\
-%           割勘となってしまった場合、\\
-%           ボブの希望は割勘だと特定する
-%         }
-%       }
-
-%       \uncover<+->{
-%         \bobcallout{-}{%
-%           しかしこのときボブは\\
-%           アリスの希望が分からない
-%         }
-%       }
-%     \end{column}
-%     \begin{column}{0.4\textwidth}
-%       \uncover<+(-2)->{
-%         \begin{itemize}
-%           \item アリスが不本意に割勘となった場合、
-%           アリスは奢りを希望していたがボブは割勘を希望しており、
-%           ランダムで割勘となった
-
-%           \item<2-> このように希望通りになった側は相手の希望が分からず、
-%           希望通りにならかった側は相手の希望を知ることができる
-%         \end{itemize}
-%       }
-%     \end{column}
-%   \end{columns}
-% \end{frame}
 
 \section{Conclusion}
 
