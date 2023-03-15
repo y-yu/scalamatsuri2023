@@ -766,7 +766,7 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{4a} \lstinline|deriveProduct| case}
+  \frametitle{\ballcircle{4a} In \lstinline|deriveProduct| case}
   
   \begin{itemize}
     \item Using \lstinline|deriveRec|, we define \lstinline|TestObject| instance for \lstinline|A|
@@ -774,7 +774,7 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
 \begin{lstlisting}[style=scala]
 inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
   def p: TestObject[A] = {
-    val xs = deriveRec[a.MirroredElemTypes]
+    val xs = deriveRec[a.MirroredElemTypes] // `a.MirroredElemTypes` is analogy tuple of `A`.
     productImpl[A](xs, a)
   }
   p
@@ -814,19 +814,19 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{4a} \lstinline|deriveProduct| case}
+  \frametitle{\ballcircle{4a} In \lstinline|deriveProduct| case}
 
   \begin{itemize}
     \item First we make \lstinline|values| which are all values 
     required by \lstinline|A|.
 \begin{lstlisting}[style=scala]
 final def productImpl[A](xs: List[TestObject[?]], a: ProductOf[A]): TestObject[A] =
-new TestObject[A] {
-  def generate: IntState[A] =
-    for {
-      values <- xs.traverse(_.generate.widen[Any])
-    } yield a.fromProduct(new SeqProduct(values))
-}
+  new TestObject[A] {
+    def generate: IntState[A] =
+      for {
+        values <- xs.traverse(_.generate.widen[Any])
+      } yield a.fromProduct(new SeqProduct(values))
+  }
 \end{lstlisting}
     \begin{itemize}
       \item It's important that \lstinline|productImpl| doesn't have \lstinline|inline|.
@@ -842,12 +842,15 @@ new TestObject[A] {
       \item それを\lstinline|a.fromProduct|で型\lstinline|A|に戻す
 
       \item ここで\lstinline|productImpl|には\lstinline|inline|がないのが地味に重要
+      \begin{itemize}
+        \item こうしておくことで\lstinline|inline|でメソッドが巨大化しすぎてエラーとなるのを回避する
+      \end{itemize}
     \end{itemize}
   }
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{4b} \lstinline|SumOf[A]| case}
+  \frametitle{\ballcircle{4b} In \lstinline|deriveSum| case}
 
   \begin{itemize}
     \item In \lstinline|SumOf| case, we generate a value in \lstinline|values|.
@@ -871,7 +874,7 @@ inline def deriveSum[A](using a: SumOf[A]): TestObject[A] = {
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{4b} \lstinline|SumOf[A]| case}
+  \frametitle{\ballcircle{4b} In \lstinline|deriveSum| case}
 
   \begin{itemize}
     \item \lstinline|sumImpl| is very complicated\ce{:innocent}
@@ -900,20 +903,23 @@ final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
     \begin{itemize}
       \item \lstinline|sumImpl|はめちゃくちゃ複雑
 
-      \item \lstinline|minBy(_.getClass.getName)|と\lstinline|maxByOption(_.getClass.getName)|はなんなのか？
+      \item だけど実装は適当で、偶数か奇数かによってどれを選んでるくるか？みたいなことをしているだけ
+
+      \item ところで\lstinline|minBy(_.getClass.getName)|と\lstinline|maxByOption(_.getClass.getName)|はなんなのか？
     \end{itemize}
   }
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{4b} \lstinline|SumOf[A]| case}
+  \frametitle{\ballcircle{4b} In \lstinline|deriveSum| case}
 
   \begin{itemize}
-    \item I don't know why, anyway shapeless 2 sorts the instances by its type name.
+    \item I don't know why, anyway shapeless 2 sorts the instances by its type name\cite{shapeless2_sort}.
 
     \item On the other hand, \lstinline|MirroredElemTypes| in Scala 3 are sorted by the definitions in source code.
 
-    \item So the \lstinline|minBy| and \lstinline|maxByOption| is for compatibility of shapeless 2 behavior.
+    \item So the \lstinline|minBy| and \lstinline|maxByOption| is needed for
+    the compatibility of shapeless 2 behavior.
   \end{itemize}
 
   \note{
@@ -934,15 +940,37 @@ final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
 
   \pause
   \begin{itemize}
+    \item The full source code in this talk has been published at \ce{:point_down:}
+    \begin{itemize}
+      \item \url{https://github.com/y-yu/test-object}
+      \item It's maybe useful as proof-of-concept to compare Scala 2(shapeless 2) with Scala 3.
+    \end{itemize}
+
     \item<+-> There is no macro compatibility between Scala 3 and Scala 2 \ce{:innocent:}
     \begin{itemize}
       \item And shapeless 2 and 3 don't have the same interface.
     \end{itemize}
 
     \item Scala 3 supports datatype generic programming initially.
+    \begin{itemize}
+      \item Is there some ways how not using ill-typed list?\ce{:thinking:}
+    \end{itemize}
 
-    \item Happy meta-programming!
+    \item Happy datatype generic programming!
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item 今回つくった\lstinline|TestObject|の全体のソースはGitHubで公開してある
+
+      \item Scala 2と3ではマクロ（メタプロ）の互換性がないし、shapelessも2と3に互換性がない
+
+      \item 一方でScala 3はdatatype generic programmingを最初からサポートしている。
+      とはいえill-typedなリストを使わなくてもいいような方法とがあればいいと思う
+
+      \item datatype generic programmingを楽しもう！
+    \end{itemize}
+  }
 \end{frame}
 
 \section*{References}
