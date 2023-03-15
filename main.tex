@@ -22,6 +22,11 @@
 \usepackage{xpatch}
 \usepackage{multicol}
 \usepackage{tabularx}
+\usepackage{bussproofs}
+
+\newenvironment{scaledprooftree}[1]%
+  {\gdef\scalefactor{#1}\begin{center}\proofSkipAmount \leavevmode}%
+  {\scalebox{\scalefactor}{\DisplayProof}\proofSkipAmount \end{center} }
 
 \usetikzlibrary{fit}
 
@@ -312,64 +317,98 @@ val dummyData = TestObject.get[StudySapuriSession]
 \end{lstlisting}
 
     \item Type class \lstinline|TestObject[A]| provides us to the way for generating some value of \lstinline|A|.
+    \begin{columns}
+      \begin{column}{0.32\textwidth}
 \begin{lstlisting}[style=scala]
 trait TestObject[A] {
   def generate: State[Int, A]
 }
 \end{lstlisting}
+      \end{column}
+      \begin{column}{0.68\textwidth}
+\begin{lstlisting}[style=scala]
+implicit val strInstance: TestObject[String] = new TestObject {
+  def generate: State[Int, A] = State(s => (s + 1, s.toString))
+}
+\end{lstlisting}
+      \end{column}
+    \end{columns}
 
     \item In naive way, we have to define too many \lstinline|TestObject| implicit instances for
     every types used in our product, but it's not possible and reasonable.
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item このトークではこの\lstinline|TestObject|の話をする
+
+      \item これは単体テストなどのモッキング用に、任意の型\lstinline|A|のダミー値を作成することができる
+
+      \item 実態としてはステートモナドになっており、この\lstinline|Int|のステートを元にして型\lstinline|A|の値を作成する
+
+      \item ナーイブには、このような\lstinline|implicit|インスタンスを、プロダクトに存在する型のぶんだけ
+      大量に定義していく必要があるが、そのような作業は無理である
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}
-  \frametitle{\lstinline|TestObject|: generating fixtures for unit tests}
+  \frametitle{\lstinline|TestObject| with datatype generic programming}
 
   \begin{itemize}
     \item The many \lstinline|TestObject| instances can be provided by
     \emph{datatype generic programming}, not manually.
     \begin{itemize}
       \item We can get \lstinline|dummyData: StudySapuriSession| easily once we define
-      \lstinline|TestObject| instances for primitive types,
+      \lstinline|TestObject| instances for primitive or Java types,
       \item Then datatype generic programming generates the other instances for our
       defined data structures(= case objects).
     \end{itemize}
 
-    \item In this talk I'll explain what the differences of datatype generic programming
-    between Scala 2 and 3.
+    \item Datatype generic programming is the one of the ways of meta-programming.
+
+    \item In this talk I'll explain datatype generic programming with Scala 3.
   \end{itemize}
 
   \note{
     \begin{itemize}
-      \item TODO: タイトルどうにかする
+      \item このようなときに\emph{datatype generic programming}を使うことができる。
+      手作業でのインスタンス定義を回避して自動的にインスタンスを提供させる
+      \begin{itemize}
+        \item ユーザーが手でやるのはプリミティブな型やJavaの型だけでよい
+      \end{itemize}
+
+      \item Datatype generic programmingはメタプロの一種である
+
+      \item しかしdatatype generic programmingのやり方がScala 2と3で相当変わってしまった。
+      今回のトークではScala 3でのやり方について解説する
     \end{itemize}
   }
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{What is datatype generic programming}
+  \frametitle{Datatype generic programming \textit{vs.} Macros}
 
   \begin{itemize}
-    \item Datatype generic programming is the way of meta-programming.
-
-    \item If we would use raw macros, we can create a new syntax like S-expression in Scala source,
+    \item Unfortunately if we would use raw macros, we can create a new syntax like LISP's S-expression in Scala source,
     but we don't want it.
     %\begin{itemize}
     %  \item I think template meta-programming in C++ allows us to prevent creating a new syntax.
     %\end{itemize}
 
-    \item Every data structure can be classified either ``tuple'' like or ``enum'' like:
+    \item Almost every data structure can be classified either ``tuple'' like or ``enum'' like:
     \begin{columns}
       \begin{column}{0.4\textwidth}
-\begin{lstlisting}[style=scala, caption=tuple like]
+        %, caption=tuple like
+\begin{lstlisting}[style=scala]
 case class TupleLike(
   field1: Int, field2: String
 )
 \end{lstlisting}
       \end{column}
       \begin{column}{0.6\textwidth}
-\begin{lstlisting}[style=scala, caption=enum like]
+        %, caption=enum like
+\begin{lstlisting}[style=scala]
 sealed trait EnumLike
 case class Pattern1(v: Int)    extends EnumLike
 case class Pattern2(v: String) extends EnumLike
@@ -381,39 +420,69 @@ case class Pattern2(v: String) extends EnumLike
       on the other hand \lstinline|EnumLike| requires either \lstinline|Int| value or \lstinline|String| value.
     \end{itemize}
 
-    \item Datatype generic programming provides us to such abstraction
-    for arbitrary types.
+    \item Datatype generic programming provides us following two functions: 
+      \ballcircle{1} converting a type value to the analogy tuple or enum and
+      \ballcircle{2} reverting it to the original type.
   \end{itemize}
 
   \note{
     \begin{itemize}
-      \item TODO: ``Datatype generic programming provides us to such abstraction
-      for arbitrary types.''これもうちょっといい感じにする
+      \item たとえば我々が生のマクロを使うと、Scalaソースコード内でLISPのS式を書けるような構文を創造できるが、
+      あまりそれは望まれていない
       \begin{itemize}
-        \item タプルとかenumのように抽象化する、みたいなニュアンス加える
+        \item 構文が創造されれば、Scalaの他にその創造された構文の勉強も必要になってしまい、
+        事実上1つのプログラム言語のために複数の言語を学ぶようなことになる
       \end{itemize}
+
+      \item ほぼ（？）すべてのデータ構造はタプルのような構造と、enumのような構造のどちらかである
+      \begin{itemize}
+        \item タプルは含まれている型の全ての値が必要で、一方でenumは含まれる型のうちどれかしら1つを要請する
+        \item この例だと\lstinline|TupleLike|は\lstinline|Int|と\lstinline|String|の両方が必要だが、
+        一方で\lstinline|EnumLike|はどちからがあればインスタンシエイトできる
+      \end{itemize}
+
+      \item こういう感じで全てのデータ構造についてタプルとenumに分けていき、
+      そのタプルを操作して再び元のデータ構造に戻すみたいな抽象化を提供するのがDatatype generic programmingである
     \end{itemize}
   }
 \end{frame}
 
-\begin{frame}
-  \frametitle{What is datatype generic programming}
+\begin{frame}[fragile]
+  \frametitle{Meta-programming using datatype generic programming}
   
   \begin{itemize}
     \item Almost all meta-programming can be done by such datatype abstraction
     and ad-hoc polymorphism, without probability of creating a new syntax.
     \begin{enumerate}
-      \item First convert user defined data structures(= case objects) to tuple or enum like using datatype generic programming
-      \item Then find some implicit instances based on the types
-      \item Finally convert the derived instance for tuple or enum like to one for the original data type.
+      \item First convert user defined data structures(= case objects) to tuple or enum like using datatype generic programming.
+      \item Then find some implicit instances based on the types included in the tuple or enum.
+      \item Finally revert the derived instance for tuple or enum like to one for the original data type.
     \end{enumerate}
 
-    \item We uses ``shapeless''\cite{shapeless_github} for datatype generic programming in Scala 2.
+    \item \lstinline|case class TupleLike(field1: Int, field2: String)| example:
+    \begin{scaledprooftree}{0.8}
+      \AxiomC{\texttt{TupleLike $\Leftrightarrow$ (Int, String)}}
+      \AxiomC{\lstinline|TestObject[Int]|}
+      \AxiomC{\lstinline|TestObject[String]|}
+      \RightLabel{{\small \ballcircle{2}}}
+      \BinaryInfC{\lstinline|TestObject[(Int, String)]|}
+      \RightLabel{{\small \ballcircle{1}}}
+      \BinaryInfC{\lstinline|TestObject[TupleLike]|}
+    \end{scaledprooftree}
+    where {\small \texttt{TupleLike $\Leftrightarrow$ (Int, String)}} is powered by datatype generic programming.
   \end{itemize}
 
   \note{
     \begin{itemize}
-      \item TODO: ユーザー定義データ構造とdatatype generic programmingとad-hoc多相の関係を図にする
+      \item このようにタプルやenumとデータ構造を行きするような抽象化と、アドホック多相があればほぼ全てのメタプログラミングを
+      シンタックスの創造なしで行うことができる
+      \begin{enumerate}
+        \item datatype generic programmingでデータ構造をタプルやenumに変換する
+        \item そのタプルやenumに含まれている型のimplicit インスタンスを探索する
+        \item そして元々の型に復活させる
+      \end{enumerate}
+
+      \item 具体的に\lstinline|TupleLike|で見ていくとこういう感じになる
     \end{itemize}
   }
 \end{frame}
@@ -422,17 +491,20 @@ case class Pattern2(v: String) extends EnumLike
   \frametitle{Macro compatibility between Scala 2 and 3}
 
   \begin{itemize}
+    \item We use \emph{shapeless}\cite{shapeless_github} for datatype generic programming in Scala 2.
+
     \item Likewise on our product ``StudySapuri ENGLISH'', 
-    we are compiling both of Scala 2 and 3 for almost every code.
+    we are compiling both of Scala 2 and 3 for almost all code.
 
     \item There is no compatibility of \emph{macros} between Scala 2 and 3 \ce{:innocent:}
 
     \item It follows that \lstinline|TestObject| implemented on Scala 2 won't work well on Scala 3.
+    \begin{itemize}
+      \item \emph{shapeless 3}\cite{shapeless-3_github} for Scala 3 is being developed but unfortunately
+      it doesn't have compatibility of shapeless for Scala 2\ce{:innocent:}
+    \end{itemize}
 
-    \item shapeless for Scala 3 is being developed but unfortunately
-     it's no compatibility shapeless for Scala 2 \ce{:innocent:}
-
-    \item Eventually we(mainly ScalaNinja) implemented \lstinline|TestObject| for Scala 3
+    \item Eventually we(mainly ScalaNinja) began to develop another \lstinline|TestObject| implementation for Scala 3
   \end{itemize}
 \end{frame}
 
