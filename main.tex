@@ -526,10 +526,8 @@ case class Pattern2(v: String) extends EnumLike
 
   \begin{itemize}
     \item Scala 3 supports datatype generic programming initially like follows:
-    % using
-    % \lstinline|summonFrom|, \lstinline|Mirror.ProductOf| and \lstinline|Mirror.SumOf|.
     \begin{columns}
-      \begin{column}{0.4\textwidth}
+      \begin{column}{0.32\textwidth}
 \begin{lstlisting}[style=scala]
 import scala.compiletime.*
 import scala.deriving.*
@@ -616,7 +614,7 @@ inline implicit def derive[A]: TestObject[A]
   \begin{itemize}
     \item \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|.
     \begin{columns}
-      \begin{column}{0.6\textwidth}
+      \begin{column}{0.5\textwidth}
 \begin{lstlisting}[style=scala]
 inline implicit def derive[A]: TestObject[A] =
   summonFrom {
