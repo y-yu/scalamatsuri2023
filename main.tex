@@ -114,8 +114,6 @@
 \setbeamerfont{vc}{size=\scriptsize, family=\ttfamily}
 \setbeamercolor{vc}{bg=white}
 
-\renewcommand{\figurename}{Fig}
-
 \input{vc.tex}
 
 \setbeamertemplate{title page}
@@ -184,7 +182,7 @@
 \definecolor{bluegray}{rgb}{0.4, 0.6, 0.8}
 \DeclareCaptionFormat{listing}{{\color{bluegray}\lstlistingname}#2#3}
 \captionsetup[lstlisting]{format=listing, font={footnotesize}}
-\captionsetup[figure]{name={Figure}}
+\captionsetup[figure]{name={Fig}}
 \captionsetup[table]{name={Table}}
 \setbeamerfont{footnote}{size=\scriptsize}
 
@@ -391,7 +389,7 @@ implicit val strInstance: TestObject[String] = new TestObject {
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Datatype generic programming \textit{vs.} Macros}
+  \frametitle{Datatype generic programming \textit{vs.} raw macros}
 
   \begin{itemize}
     \item Unfortunately if we would use raw macros, we can create a new syntax like LISP's S-expression in Scala source,
@@ -497,7 +495,7 @@ case class Pattern2(v: String) extends EnumLike
   \begin{itemize}
     \item We use \emph{shapeless}\cite{shapeless_github} for datatype generic programming in Scala 2.
 
-    \item Likewise on our product, we are compiling both of Scala 2 and 3 for almost all code.
+    \item Likewise on our product, we are compiling \& testing both of Scala 2 and 3 for almost all code.
 
     \item There is no compatibility of macros between Scala 2 and 3 \ce{:innocent:}
 
@@ -514,7 +512,7 @@ case class Pattern2(v: String) extends EnumLike
     \begin{itemize}
       \item 我々はScala 2でのdatatype generic programmingにshapelessをつかっている
 
-      \item ところで、我々のプロダクトはScala 3でもほぼ全てのコードをコンパイルしている
+      \item ところで、我々のプロダクトはScala 3でもほぼ全てのコードをコンパイル\&テストしている
 
       \item そしてScala 2と3でマクロの互換性がない
 
@@ -621,7 +619,9 @@ inline implicit def derive[A]: TestObject[A]
   \frametitle{\ballcircle{1} Check if the instance for the input type has been defined}
 
   \begin{itemize}
-    \item \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|
+    \item \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|.
+    \begin{columns}
+      \begin{column}{0.6\textwidth}
 \begin{lstlisting}[style=scala]
 inline implicit def derive[A]: TestObject[A] =
   summonFrom {
@@ -631,6 +631,15 @@ inline implicit def derive[A]: TestObject[A] =
       create[A] // we'll define next page!
   }
 \end{lstlisting}
+      \end{column}
+      \begin{column}{0.3\textwidth}
+        \begin{figure}[h]
+          \includegraphics[width=0.5\columnwidth]{./img/fantasy_mahoujin_syoukan.png}
+          \caption{Image of \lstinline|summonFrom|}
+        \end{figure}
+      \end{column}
+    \end{columns}
+
 
     \item If \lstinline|summonFrom| finds the \lstinline|TestObject[A]| instance,
     then the instance would be named as \lstinline|x|.
@@ -653,7 +662,7 @@ inline implicit def derive[A]: TestObject[A] =
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\ballcircle{2} Pattern matching if product or sum}
+  \frametitle{\ballcircle{2} Pattern matching if \lstinline|ProductOf[A]| or \lstinline|SumOf[A]|}
 
   \begin{itemize}
     \item Since there is no \lstinline|TestInstance[A]| instance yet,
@@ -737,6 +746,23 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
     \item In addition \lstinline|*:| is type-level tuple constructor
     provided since Scala 3.
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item  \lstinline|deriveProduct|とか\lstinline|deriveSum|を見ていくまえに
+      タプルとかenumに所属する型のインスタンスを全部あつめてくる\lstinline|deriveRec|を準備しておく
+
+      \item たとえば\lstinline|TupleLike|なら
+      \lstinline|TestObject[Int]|と\lstinline|TestObject[String]|の両方のインスタンスを集めてくる
+
+      \item \lstinline|erasedValue|を使うと再帰的に集めてくることができる
+
+      \item ただし\lstinline|TestObject[Int]|と\lstinline|TestObject[String]|みたいに
+      インスタンスの間に型の互換性はないから、これを1つのリストに詰め込むと型が壊れる
+
+      \item ちなみに\lstinline|*:|は型レベルタプルで、\lstinline|HList|みたいなやつ
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
@@ -763,12 +789,28 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
     avoid
     \begin{itemize}
       \item throwing \lstinline|MethodTooLargeException| due to \lstinline|inline|
-      \item and generating too many nameless classes instead of nameless class.
+      \item and generating too many nameless classes using method \lstinline|p|.
     \end{itemize}
 
     \item In meta-programming, we have to consider about compiling efficiency, not only runtime.
     That's maybe the why meta-programming is difficult\ce{:innocent:}
   \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item \lstinline|deriveRec|をつかって\lstinline|TestObject[A]|のインスタンスを作っていく
+
+      \item これは謎にメソッド\lstinline|p|の中で\lstinline|productImpl|呼ぶだけとなっているのは、
+      実は
+      \begin{itemize}
+        \item \lstinline|inline|のコード生成で\lstinline|MethodTooLargeException|がブチあがるのを避け、
+        \item 無名クラスではなくてメソッドにしておくことで、無名クラスの大量生成も避ける
+      \end{itemize}
+      というScalaNinjaのテクニックとなっている
+
+      \item こういうコンパイル時の効率も考慮しないといけないので、メタプロは難しい
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
