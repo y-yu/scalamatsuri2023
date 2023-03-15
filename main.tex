@@ -394,22 +394,17 @@ implicit val strInstance: TestObject[String] = new TestObject {
   \begin{itemize}
     \item Unfortunately if we would use raw macros, we can create a new syntax like LISP's S-expression in Scala source,
     but we don't want it.
-    %\begin{itemize}
-    %  \item I think template meta-programming in C++ allows us to prevent creating a new syntax.
-    %\end{itemize}
 
     \item Almost every data structure can be classified either ``tuple'' like or ``enum'' like:
     \begin{columns}
-      \begin{column}{0.4\textwidth}
-        %, caption=tuple like
+      \begin{column}{0.32\textwidth}
 \begin{lstlisting}[style=scala]
 case class TupleLike(
   field1: Int, field2: String
 )
 \end{lstlisting}
       \end{column}
-      \begin{column}{0.6\textwidth}
-        %, caption=enum like
+      \begin{column}{0.5\textwidth}
 \begin{lstlisting}[style=scala]
 sealed trait EnumLike
 case class Pattern1(v: Int)    extends EnumLike
