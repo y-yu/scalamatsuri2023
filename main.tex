@@ -815,29 +815,114 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
 
 \begin{frame}[fragile]
   \frametitle{\ballcircle{4a} \lstinline|deriveProduct| case}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{\ballcircle{3b} \lstinline|Sum| case}
 
   \begin{itemize}
-    \item In \lstinline|Sum| case, we generate a value in \lstinline|values|.
-\begin{lstlisting}[style=scala],
-  final def sumImpl[A](values: List[DeterministicTestObject[?]]): DeterministicTestObject[A] =
-    new DeterministicTestObject[A] {
-      def generate: IntState[A] =
-        for {
-          s <- State.get
-          value = values(values.length % s)
-          result <- value.generate
-        } yield result
-    }
+    \item First we make \lstinline|values| which are all values 
+    required by \lstinline|A|.
+\begin{lstlisting}[style=scala]
+final def productImpl[A](xs: List[TestObject[?]], a: ProductOf[A]): TestObject[A] =
+new TestObject[A] {
+  def generate: IntState[A] =
+    for {
+      values <- xs.traverse(_.generate.widen[Any])
+    } yield a.fromProduct(new SeqProduct(values))
+}
 \end{lstlisting}
+    \begin{itemize}
+      \item It's important that \lstinline|productImpl| doesn't have \lstinline|inline|.
+    \end{itemize}
+
+    \item Then making \lstinline|A| value using \lstinline|a.fromProduct|.
   \end{itemize}
 
   \note{
     \begin{itemize}
-      \item TODO: もうちょっと英語がんばる
+      \item \lstinline|List[TestObject[?]]|をつかってまず必要な値をつくる
+
+      \item それを\lstinline|a.fromProduct|で型\lstinline|A|に戻す
+
+      \item ここで\lstinline|productImpl|には\lstinline|inline|がないのが地味に重要
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{4b} \lstinline|SumOf[A]| case}
+
+  \begin{itemize}
+    \item In \lstinline|SumOf| case, we generate a value in \lstinline|values|.
+\begin{lstlisting}[style=scala],
+inline def deriveSum[A](using a: SumOf[A]): TestObject[A] = {
+  def s: TestObject[A] = {
+    val values = deriveRec[a.MirroredElemTypes]
+    sumImpl[A](values)
+  }
+  s
+}
+\end{lstlisting}
+    \item It's very similar to \lstinline|deriveProduct|.
+  \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item \lstinline|SumOf|の場合を\lstinline|deriveProduct|と同じようにできる
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{4b} \lstinline|SumOf[A]| case}
+
+  \begin{itemize}
+    \item \lstinline|sumImpl| is very complicated\ce{:innocent}
+\begin{lstlisting}[style=scala],
+final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
+  new TestObject[A] {
+    def generate: IntState[A] =
+      for {
+        allResults <- values.traverse(_.generate.widen[Any])
+        l = allResults.minBy(_.getClass.getName)
+        rOpt = allResults.tail.headOption.flatMap(
+          _ => allResults.maxByOption(_.getClass.getName)
+        )
+        s <- State.get
+      } yield rOpt match {
+        case Some(r) => if (s % 2 == 0) l.asInstanceOf[A] else r.asInstanceOf[A]
+        case None => l.asInstanceOf[A]
+      }
+  }
+\end{lstlisting}
+
+    \item What's the purpose of \lstinline|minBy(_.getClass.getName)| and \lstinline|maxByOption(_.getClass.getName)|?
+  \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item \lstinline|sumImpl|はめちゃくちゃ複雑
+
+      \item \lstinline|minBy(_.getClass.getName)|と\lstinline|maxByOption(_.getClass.getName)|はなんなのか？
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\ballcircle{4b} \lstinline|SumOf[A]| case}
+
+  \begin{itemize}
+    \item I don't know why, anyway shapeless 2 sorts the instances by its type name.
+
+    \item On the other hand, \lstinline|MirroredElemTypes| in Scala 3 are sorted by the definitions in source code.
+
+    \item So the \lstinline|minBy| and \lstinline|maxByOption| is for compatibility of shapeless 2 behavior.
+  \end{itemize}
+
+  \note{
+    \begin{itemize}
+      \item 理由は不明だがshapeless 2は見つかったインスタンスをその名前順にソートして返すようになっている
+
+      \item しかしScala 3の\lstinline|MirroredElemTypes|は定義した順に返ってくる
+
+      \item そこらの互換性のために一応順序をいじっている
     \end{itemize}
   }
 \end{frame}
