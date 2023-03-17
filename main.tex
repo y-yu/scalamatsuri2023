@@ -123,7 +123,7 @@
   \begingroup
     \centering
     \hrulefill\par%
-    \vskip1ex\par%
+    %\vskip1ex\par%
     \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{title}
       \vfill
       \usebeamerfont{title}\inserttitle\par%
@@ -135,14 +135,14 @@
       \vfill  
     \end{beamercolorbox}%
     \hrulefill\par%
-    \vskip2ex%
+    \vskip1ex%
     \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{author}
       \usebeamerfont{author}\insertauthor
     \end{beamercolorbox}
     \begin{beamercolorbox}[sep=0pt,center,shadow=false,rounded=true]{email}
       \usebeamerfont{email}\InsertEmail
     \end{beamercolorbox}
-    \vskip0.1ex
+    %\vskip0.1ex
     \begin{beamercolorbox}[sep=5pt,center,shadow=false,rounded=true]{institute}
       \usebeamerfont{institute}\insertinstitute
     \end{beamercolorbox}
@@ -153,11 +153,6 @@
       \usebeamerfont{vc}
       \url{https://github.com/\InsertGitHub} (\texttt{\GITAbrHash})
     \end{beamercolorbox}
-    % {\centering
-    %   \href{https://creativecommons.org/licenses/by-nc/4.0/}{%
-    %     \includegraphics[width=0.1\textwidth]{img/by-nc.pdf}%
-    %   }%
-    % }
     {\usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}
   \endgroup
   \vfill
@@ -225,17 +220,11 @@
 \date[April 15-16, 2023]{%
   \oldstylenums{April 15-16, 2023}
 }
-\Conference[ScalaMatsuri 2023]{Sponsor sessions of ScalaMatsuri 2023}
-\institute[\InsertEmail]{Recruit Co., Ltd}
+\Conference[ScalaMatsuri 2023]{Sponsor session of ScalaMatsuri 2023}
+\institute[\InsertEmail]{%
+  \includegraphics[width=4cm]{./img/6_Brandlogo_2_Color.jpg}
+}
 \GitHub{y-yu/scalamatsuri2023}
-
-\newcommand{\facesize}{1cm}
-\newcommand\alicecallout[2]{
-  \simplecallout[{\includegraphics[width=\facesize]{./img/alice_face.png}}]{#1}{cyan!10}{#2}
-}
-\newcommand\bobcallout[2]{
-  \simplecallout[{\includegraphics[width=\facesize]{./img/bob_face.png}}]{#1}{orange!10}{#2}
-}
 
 \begin{document}
 
@@ -980,6 +969,48 @@ case object X1 extends X
       とはいえill-typedなリストを使わなくてもいいような方法とがあればいいと思う
 
       \item datatype generic programmingを楽しもう！
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{\includegraphics[height=3ex]{img/01_Study_Sapuri_English_Horizontal.png}}
+
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{itemize}
+        \item The number of lines of Scala 2 \& 3 source code is 878,434 on March 1st.
+        \begin{itemize}
+          \item It's not included generated code (for example protobuf \& gRPC) so totally over 1,000,000 approximately.
+        \end{itemize}
+
+        \item There are many micro services (Fig.\ref{fig:graph}) and it's very complicated\ce{:innocent:}
+
+        \item The number of our server side team members is about 16.
+
+        \item It's very useful for us to use meta-programming
+        which is not only datatype generic programming but also \emph{scalafix} and so on.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{figure}[h]
+        \includegraphics[width=\columnwidth]{img/graph.png}
+        \caption{Very complicated micro services}
+        \label{fig:graph}
+      \end{figure}
+    \end{column}
+  \end{columns}
+
+  \note{
+    \begin{itemize}
+      \item 我々はスタディーサプリENGLISHというプロダクトを開発していて、
+      ソースコード規模としては3月時点でテスト込みで87万行ある。
+      protobufやgRPCで生成されたコードを含めると100万行以上となる
+
+      \item 図\ref{fig:graph}にあるようにマイクロサービスの数も多く、関係も複雑となっている
+
+      \item こういうものを16名程度のメンバーで維持するとなると、今回紹介したdatatype generic programmingや
+      他にもscalafixといったメタプログラミングのテクニックはとても重要となる
     \end{itemize}
   }
 \end{frame}
