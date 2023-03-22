@@ -296,7 +296,7 @@
   \frametitle{\lstinline|TestObject|: generating fixtures for unit tests}
 
   \begin{itemize}
-    \item We uses \lstinline|TestObject| on our product,
+    \item<+-> We uses \lstinline|TestObject| on our product,
     which is a utility to generate dummy objects(as known as \emph{fixtures}) for unit tests.
 \begin{lstlisting}[style=scala]
 case class StudySapuriSession(
@@ -305,7 +305,7 @@ case class StudySapuriSession(
 val dummyData = TestObject.get[StudySapuriSession]
 \end{lstlisting}
 
-    \item Type class \lstinline|TestObject[A]| provides us to the way for generating some value of \lstinline|A|.
+    \item<+-> Type class \lstinline|TestObject[A]| provides us to the way for generating some value of \lstinline|A|.
     \begin{columns}
       \begin{column}{0.32\textwidth}
 \begin{lstlisting}[style=scala]
@@ -323,7 +323,7 @@ implicit val strInstance: TestObject[String] = new TestObject {
       \end{column}
     \end{columns}
 
-    \item In naive way, we have to define too many \lstinline|TestObject| implicit instances for
+    \item<+-> In naive way, we have to define too many \lstinline|TestObject| implicit instances for
     every types used in our product, but it's not possible and reasonable.
   \end{itemize}
 
@@ -344,10 +344,11 @@ implicit val strInstance: TestObject[String] = new TestObject {
 \section{Overview of datatype generic programming}
 
 \begin{frame}
-  \frametitle{\lstinline|TestObject| with datatype generic programming}
+  \frametitle{\lstinline|TestObject| and datatype generic programming}
 
+  \pause
   \begin{itemize}
-    \item The many \lstinline|TestObject| instances can be provided by
+    \item<+-> The many \lstinline|TestObject| instances can be provided by
     \emph{datatype generic programming}, not manually.
     \begin{itemize}
       \item We can get \lstinline|dummyData: StudySapuriSession| easily once we define
@@ -356,9 +357,9 @@ implicit val strInstance: TestObject[String] = new TestObject {
       defined data structures(= case objects).
     \end{itemize}
 
-    \item Datatype generic programming is the one of the ways of meta-programming.
+    \item<+-> Datatype generic programming is the one of the ways of meta-programming.
 
-    \item In this talk I'll explain datatype generic programming with Scala 3.
+    \item<+-> In this talk I'll explain datatype generic programming with Scala 3.
   \end{itemize}
 
   \note{
@@ -380,11 +381,12 @@ implicit val strInstance: TestObject[String] = new TestObject {
 \begin{frame}[fragile]
   \frametitle{Datatype generic programming \textit{vs.} raw macros}
 
+  \pause
   \begin{itemize}
-    \item Unfortunately if we would use raw macros, we can create a new syntax like LISP's S-expression in Scala source,
+    \item<+-> Unfortunately if we would use raw macros, we can create a new syntax like LISP's S-expression in Scala source,
     but we don't want it.
 
-    \item Almost every data structure can be classified either ``tuple'' like or ``enum'' like:
+    \item<+-> Almost every data structure can be classified either ``tuple'' like or ``enum'' like:
     \begin{columns}
       \begin{column}{0.32\textwidth}
 \begin{lstlisting}[style=scala]
@@ -406,7 +408,7 @@ case class Pattern2(v: String) extends EnumLike
       on the other hand \lstinline|EnumLike| requires either \lstinline|Int| value or \lstinline|String| value.
     \end{itemize}
 
-    \item Datatype generic programming provides us following two functions: 
+    \item<+-> Datatype generic programming provides us following two functions: 
       \ballcircle{1} converting a type value to the analogy tuple or enum and
       \ballcircle{2} reverting it to the original type.
   \end{itemize}
@@ -439,12 +441,14 @@ case class Pattern2(v: String) extends EnumLike
   \begin{itemize}
     \item Almost all meta-programming can be done by such datatype abstraction
     and ad-hoc polymorphism, without probability of creating a new syntax.
+    \pause
     \begin{enumerate}
       \item First convert user defined data structures(= case objects) to tuple or enum like using datatype generic programming.
       \item Then find some implicit instances based on the types included in the tuple or enum.
       \item Finally revert the derived instance for tuple or enum like to one for the original data type.
     \end{enumerate}
 
+    \pause
     \item \lstinline|case class TupleLike(field1: Int, field2: String)| example:
     \begin{scaledprooftree}{0.8}
       \AxiomC{\texttt{TupleLike $\Leftrightarrow$ (Int, String)}}
@@ -479,17 +483,32 @@ case class Pattern2(v: String) extends EnumLike
   \begin{itemize}
     \item We use \emph{shapeless}\cite{shapeless_github} for datatype generic programming in Scala 2.
 
+    \pause
     \item Likewise on our product, we are compiling \& testing both of Scala 2 and 3 for almost all code.
 
+    \pause
     \item There is no compatibility of macros between Scala 2 and 3 \ce{:innocent:}
 
+    \pause
     \item It follows that \lstinline|TestObject| implemented on Scala 2 won't work well on Scala 3.
     \begin{itemize}
       \item \emph{shapeless 3}\cite{shapeless-3_github} for Scala 3 is being developed but unfortunately
       it doesn't have compatibility of shapeless for Scala 2\ce{:innocent:}
     \end{itemize}
 
-    \item Eventually we(mainly ScalaNinja) began to develop another \lstinline|TestObject| implementation for Scala 3
+    \pause
+    \begin{columns}
+      \begin{column}{0.7\textwidth}      
+        \item Eventually we(mainly ScalaNinja) began to develop another \lstinline|TestObject| implementation for Scala 3
+      \end{column}
+      \begin{column}{0.2\textwidth}
+        \begin{figure}[h]
+          \includegraphics[width=0.6\columnwidth]{img/xuwei.png}
+          \caption{ScalaNinja}
+          \label{fig:scalaninja}
+        \end{figure}
+      \end{column}
+    \end{columns}
   \end{itemize}
 
   \note{
@@ -767,7 +786,7 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
       through temporary method \lstinline|p|?\ce{:thinking:}
     \end{itemize}
 
-    \item This is the ScalaNinja's remarkable and state-of-the-art technique to
+    \item This is ScalaNinja's remarkable and state-of-the-art technique to
     avoid
     \begin{itemize}
       \item throwing \lstinline|MethodTooLargeException| due to \lstinline|inline|
