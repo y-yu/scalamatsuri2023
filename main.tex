@@ -532,8 +532,9 @@ case class Pattern2(v: String) extends EnumLike
 \begin{frame}[fragile]
   \frametitle{Datatype generic programming in Scala 3}
 
+  \pause
   \begin{itemize}
-    \item Scala 3 supports datatype generic programming initially like follows:
+    \item<+-> Scala 3 supports datatype generic programming initially like follows:
     \begin{columns}
       \begin{column}{0.32\textwidth}
 \begin{lstlisting}[style=scala]
@@ -558,9 +559,9 @@ val res1: TupleLike = TupleLike(1,a)
       \item Similarly we can convert \lstinline|sealed trait| to enum like.
     \end{itemize}
 
-    \item We can use some functions to convert case objects from/to tuple like without any libraries.
+    \item<+-> We can use some functions to convert case objects from/to tuple like without any libraries.
 
-    \item Meta-programming tools in Scala 3 is reinforced rather than Scala 2\ce{:thumbsup:}
+    \item<+-> Meta-programming tools in Scala 3 is reinforced rather than Scala 2\ce{:thumbsup:}
   \end{itemize}
 
   \note{
@@ -579,7 +580,7 @@ val res1: TupleLike = TupleLike(1,a)
   \frametitle{\lstinline|TestObject| implementation on Scala 3}
 
   \begin{itemize}
-    \item We'll define \lstinline|derive| method as the final goal such like:
+    \item<+-> We'll define \lstinline|derive| method as the final goal such like:
 \begin{lstlisting}[style=scala]
 inline implicit def derive[A]: TestObject[A]
 \end{lstlisting}   
@@ -587,7 +588,7 @@ inline implicit def derive[A]: TestObject[A]
       \item \lstinline|derive| provides \lstinline|TestObject| instances for all \lstinline|A|.
     \end{itemize}
 
-    \item This is the overview of \lstinline|derive| behavior:
+    \item<+-> This is the overview of \lstinline|derive| behavior:
     \begin{enumerate}
       \item Check if the instance for the input type has been defined.
       \item If not found, pattern match the type into either tuple like or enum like. \label{enum:tuple_or_enum}
@@ -596,7 +597,7 @@ inline implicit def derive[A]: TestObject[A]
       \item Finally make the instance for the input type using \ballref{enum:instances_list} instances list.
     \end{enumerate}
 
-    \item Let's see the details!
+    \item<+-> Let's see the details!
   \end{itemize}
 
   \note{
@@ -620,7 +621,7 @@ inline implicit def derive[A]: TestObject[A]
   \frametitle{\ballcircle{1} Check if the instance for the input type has been defined}
 
   \begin{itemize}
-    \item \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|.
+    \item<+-> \lstinline|summonFrom| searches the \lstinline|TestObject| instance for type \lstinline|A|.
     \begin{columns}
       \begin{column}{0.5\textwidth}
 \begin{lstlisting}[style=scala]
@@ -642,13 +643,13 @@ inline implicit def derive[A]: TestObject[A] =
     \end{columns}
 
 
-    \item If \lstinline|summonFrom| finds the \lstinline|TestObject[A]| instance,
+    \item<+-> If \lstinline|summonFrom| finds the \lstinline|TestObject[A]| instance,
     then the instance would be named as \lstinline|x|.
     \begin{itemize}
       \item In this case, it's unnecessary to define the instance so returns \lstinline|x|.
     \end{itemize}
 
-    \item In the latter case, we call \lstinline|create| method to define \lstinline|TestObject[A]|.
+    \item<+-> In the latter case, we call \lstinline|create| method to define \lstinline|TestObject[A]|.
   \end{itemize}
 
   \note{
@@ -666,7 +667,7 @@ inline implicit def derive[A]: TestObject[A] =
   \frametitle{\ballcircle{2} Pattern matching if \lstinline|ProductOf[A]| or \lstinline|SumOf[A]|}
 
   \begin{itemize}
-    \item Since there is no \lstinline|TestInstance[A]| instance yet,
+    \item<+-> Since there is no \lstinline|TestInstance[A]| instance yet,
     \lstinline|create| finds \lstinline|ProductOf[A]| or \lstinline|SumOf[A]|
     instance using \lstinline|summonFrom| again.
 \begin{lstlisting}[style=scala]
@@ -679,7 +680,7 @@ inline final def create[A]: TestObject[A] =
   }
 \end{lstlisting}
 
-    \item It means that:
+    \item<+-> It means that:
     \begin{enumerate}
       \item \lstinline|A| is a tuple like type (i.e. case classes)
       if there is a \lstinline|ProductOf[A]| instance,
@@ -725,6 +726,7 @@ case class TupleLike(
       \end{column}
     \end{columns}
 
+    \pause
     \item \lstinline|erasedValue| allows us to search and collect all instances recursively.
     \begin{columns}
       \begin{column}{0.6\textwidth}
@@ -744,6 +746,7 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
       \end{column}
     \end{columns}
 
+    \pause
     \item In addition \lstinline|*:| is type-level tuple constructor
     provided since Scala 3.
   \end{itemize}
@@ -770,7 +773,7 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
   \frametitle{\ballcircle{4a} In \lstinline|deriveProduct| case}
   
   \begin{itemize}
-    \item Using \lstinline|deriveRec|, we define \lstinline|TestObject| instance for \lstinline|A|
+    \item<+-> Using \lstinline|deriveRec|, we define \lstinline|TestObject| instance for \lstinline|A|
     in \lstinline|deriveProduct| case.
 \begin{lstlisting}[style=scala]
 inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
@@ -786,14 +789,14 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
       through temporary method \lstinline|p|?\ce{:thinking:}
     \end{itemize}
 
-    \item This is ScalaNinja's remarkable and state-of-the-art technique to
+    \item<+-> This is ScalaNinja's remarkable and state-of-the-art technique to
     avoid
     \begin{itemize}
       \item throwing \lstinline|MethodTooLargeException| due to \lstinline|inline|
       \item and generating too many nameless classes.
     \end{itemize}
 
-    \item In meta-programming, we have to consider about compiling efficiency, not only runtime.
+    \item<+-> In meta-programming, we have to consider about compiling efficiency, not only runtime.
     That's maybe the why meta-programming is difficult\ce{:innocent:}
   \end{itemize}
 
@@ -818,7 +821,7 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
   \frametitle{\ballcircle{4a} In \lstinline|deriveProduct| case}
 
   \begin{itemize}
-    \item First we make \lstinline|values| which are all values 
+    \item<+-> First we make \lstinline|values| which are all values 
     required by \lstinline|A|.
 \begin{lstlisting}[style=scala]
 final def productImpl[A](xs: List[TestObject[?]], a: ProductOf[A]): TestObject[A] =
@@ -833,7 +836,7 @@ final def productImpl[A](xs: List[TestObject[?]], a: ProductOf[A]): TestObject[A
       \item It's important that \lstinline|productImpl| doesn't have \lstinline|inline|.
     \end{itemize}
 
-    \item Then making \lstinline|A| value using \lstinline|a.fromProduct|.
+    \item<+-> Then making \lstinline|A| value using \lstinline|a.fromProduct|.
   \end{itemize}
 
   \note{
@@ -878,7 +881,7 @@ inline def deriveSum[A](using a: SumOf[A]): TestObject[A] = {
   \frametitle{\ballcircle{4b} In \lstinline|deriveSum| case}
 
   \begin{itemize}
-    \item \lstinline|sumImpl| is very complicated\ce{:innocent}
+    \item<+-> \lstinline|sumImpl| is very complicated\ce{:innocent}
 \begin{lstlisting}[style=scala]
 final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
   new TestObject[A] {
@@ -897,7 +900,7 @@ final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
   }
 \end{lstlisting}
 
-    \item What's the purpose of \lstinline|minBy(_.getClass.getName)| and \lstinline|maxByOption(_.getClass.getName)|?
+    \item<+-> What's the purpose of \lstinline|minBy(_.getClass.getName)| and \lstinline|maxByOption(_.getClass.getName)|?
   \end{itemize}
 
   \note{
@@ -915,11 +918,11 @@ final def sumImpl[A](values: List[TestObject[?]]): TestObject[A] =
   \frametitle{\ballcircle{4b} In \lstinline|deriveSum| case}
 
   \begin{itemize}
-    \item I don't know why, anyway shapeless 2 sorts the instances by its type name\cite{shapeless2_sort}.
+    \item<+-> I don't know why, anyway shapeless 2 sorts the instances by its type name\cite{shapeless2_sort}.
   
-    \item On the other hand, \lstinline|MirroredElemTypes| in Scala 3 are sorted by the definitions in source code.
+    \item<+-> On the other hand, \lstinline|MirroredElemTypes| in Scala 3 are sorted by the definitions in source code.
 
-    \item For instance:
+    \item<+-> For instance:
     \begin{columns}
       \begin{column}{0.28\textwidth}
 \begin{lstlisting}[style=scala]
@@ -937,7 +940,7 @@ case object X1 extends X
       \end{column}
     \end{columns}
 
-    \item So the \lstinline|minBy| and \lstinline|maxByOption| is needed for
+    \item<+-> So the \lstinline|minBy| and \lstinline|maxByOption| is needed for
     the compatibility of shapeless 2 behavior.
   \end{itemize}
 
@@ -959,7 +962,7 @@ case object X1 extends X
 
   \pause
   \begin{itemize}
-    \item The full source code in this talk has been published at \ce{:point_down:}
+    \item<+-> The full source code in this talk has been published at \ce{:point_down:}
     \begin{itemize}
       \item \url{https://github.com/y-yu/test-object}
       \item It's maybe useful as proof-of-concept to compare Scala 2(shapeless 2) with Scala 3.
@@ -970,12 +973,12 @@ case object X1 extends X
       \item And shapeless 2 and 3 don't have the same interface.
     \end{itemize}
 
-    \item Scala 3 supports datatype generic programming initially.
+    \item<+-> Scala 3 supports datatype generic programming initially.
     \begin{itemize}
       \item Is there some ways how not using ill-typed list?\ce{:thinking:}
     \end{itemize}
 
-    \item Happy datatype generic programming!
+    \item<+-> Happy datatype generic programming!
   \end{itemize}
 
   \note{
