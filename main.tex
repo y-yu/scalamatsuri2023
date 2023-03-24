@@ -777,7 +777,7 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
   
   \begin{itemize}
     \item<+-> Using \lstinline|deriveRec|, we define a \lstinline|TestObject| instance for \lstinline|A|
-    in \lstinline|deriveProduct| case.
+    in \lstinline|deriveProduct|.
 \begin{lstlisting}[style=scala]
 inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
   def p: TestObject[A] = {
@@ -789,7 +789,7 @@ inline def deriveProduct[A](using a: ProductOf[A]): TestObject[A] = {
 \end{lstlisting}
     \begin{itemize}
       \item Why does \lstinline|deriveProduct| only call \lstinline|productImpl|
-      through a temporary method \lstinline|p|?\ce{:thinking:}
+      through a temporary method \lstinline|p|\ce{:thinking:}
     \end{itemize}
 
     \item<+-> This is ScalaNinja's remarkable and state-of-the-art technique to avoid:
