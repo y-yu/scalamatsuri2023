@@ -393,8 +393,11 @@ implicit val strInstance: TestObject[String] = new TestObject {
 
   \pause
   \begin{itemize}
-    \item<+-> Unfortunately if we were to use raw macros, we could create a new syntax like LISP's S-expression in Scala source,
+    \item<+-> Unfortunately if we were to use raw macros, we could arbitrarily edit syntax trees,
     but we don't want that.
+    \begin{itemize}
+      \item For instance, it's difficult for us to write \emph{sbt} settings even if we know Scala\ce{:innocent:}
+    \end{itemize}
 
     \item<+-> Almost every data structure can be classified as either ``tuple''-like or ``enum''-like:
     \begin{columns}
@@ -425,11 +428,9 @@ case class Pattern2(v: String) extends EnumLike
 
   \note{
     \begin{itemize}
-      \item たとえば我々が生のマクロを使うと、Scalaソースコード内でLISPのS式を書けるような構文を創造できるが、
-      あまりそれは望まれていない
+      \item 我々が生のマクロを使うと、シンタックスツリーを任意に変更できてしまうが、それはあまり望んでいない
       \begin{itemize}
-        \item 構文が創造されれば、Scalaの他にその創造された構文の勉強も必要になってしまい、
-        事実上1つのプログラム言語のために複数の言語を学ぶようなことになる
+        \item たとえばScalaを知っていても\emph{sbt}の設定を書くのが難しい
       \end{itemize}
 
       \item ほぼ（？）すべてのデータ構造はタプルのような構造と、enumのような構造のどちらかである
@@ -450,7 +451,7 @@ case class Pattern2(v: String) extends EnumLike
   
   \begin{itemize}
     \item Almost all meta-programming can be done using such datatype abstraction
-    and ad-hoc polymorphism, without the need to create a new syntax.
+    and ad-hoc polymorphism, without the need to edit syntax trees.
     \pause
     \begin{enumerate}
       \item First, convert user-defined data structures(= case objects) to tuple or enum like using datatype generic programming.
@@ -475,7 +476,7 @@ case class Pattern2(v: String) extends EnumLike
   \note{
     \begin{itemize}
       \item このようにタプルやenumとデータ構造を行きするような抽象化と、アドホック多相があればほぼ全てのメタプログラミングを
-      シンタックスの創造なしで行うことができる
+      シンタックスツリーの変更なしで行うことができる
       \begin{enumerate}
         \item datatype generic programmingでデータ構造をタプルやenumに変換する
         \item そのタプルやenumに含まれている型のimplicit インスタンスを探索する
@@ -582,8 +583,6 @@ val res1: TupleLike = TupleLike(1,a)
       任意のケースクラスをそのフィールドの型に対応するタプルにしたり、タプルから構成したりできる
       
       \item 今回は紹介しない部分も含めて、Scala 3はメタプログラミングがScala 2に比べて強化されている
-
-      \item TODO: ``reinforced''はなんかもっといい英語を探す
     \end{itemize}
   }
 \end{frame}
@@ -776,8 +775,7 @@ inline def deriveRec[T <: Tuple]: List[TestObject[?]] =
       \item ただし\lstinline|TestObject[Int]|と\lstinline|TestObject[String]|みたいに
       インスタンスの間に型の互換性はないから、これを1つのリストに詰め込むと型が壊れる
 
-      \item ちなみに\lstinline|*:|は型レベルタプルで、\lstinline|HList|みたいなやつ
-      \textbf{TODO: この理解であってるか？}
+      \item ちなみに\lstinline|*:|は型レベルタプルで、\lstinline|HList|みたいなもの
     \end{itemize}
   }
 \end{frame}

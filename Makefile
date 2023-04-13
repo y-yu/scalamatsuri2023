@@ -8,7 +8,6 @@ clean:
 	latexmk -C
 
 %.pdf: %.tex main.tex vc.tex lib/* ref.bib
-	# PLANTUML_JAR=/usr/local/Cellar/plantuml/1.2021.16/libexec/plantuml.jar latexmk -pdf $<
 	latexmk -pdf $<
 
 vc.tex: .git/logs/HEAD
